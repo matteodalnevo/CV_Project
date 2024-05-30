@@ -16,7 +16,13 @@ In more detail, for each frame of the input video the system to be developed sho
 |----------|----------|----------------------------------------------------------------------|
 | Matteo   |    03    | Set up for the project / import the dataset                          |
 |          |    00    |                                                                      |
+|          |    00    |                                                                      |
+|          |    00    |                                                                      |
 | Marco    |    00    | To Do                                                                |
 |          |    00    |                                                                      |
+|          |    00    |                                                                      |
+|          |    00    |                                                                      |
 | Aaron    |    00    | To Do                                                                |
+|          |    00    |                                                                      |
+|          |    00    |                                                                      |
 |          |    00    |                                                                      |
