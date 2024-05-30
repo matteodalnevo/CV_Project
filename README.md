@@ -10,8 +10,18 @@ In more detail, for each frame of the input video the system to be developed sho
 3. Segment the area inside the playing field boundaries detected in point 2 into the following categories: 1-the white “cue ball”, 2-the black “8-ball”, 3-balls with solid colors, 4-balls with stripes, 5-playing field;
 4. Represent the current state of the game in a 2D top-view visualization map, to be updated at each new frame with the current ball positions and the trajectory of each ball that is moving.
 
-# Hours Table
+# Table of working Hours
 
-|  Matteo  | Marco    | Aaron    |
-|----------|----------|----------|
-| 03       | 00       | 00       |
+|          |   Hours  |          |
+|----------|----------|----------------------------------------------------------------------|
+| Matteo   | 03       |    Set up for the project / import the dataset                       |
+|--------------------------------------------------------------------------------------------|
+|          | 00       |                                                                      |
+|----------|----------|----------------------------------------------------------------------|
+| Marco    | 00       | 00                                                                   |
+|--------------------------------------------------------------------------------------------|
+|          | 00       |                                                                      |
+|----------|----------|----------------------------------------------------------------------|
+| Aaron    | 00       | 00                                                                   |
+|--------------------------------------------------------------------------------------------|
+|          | 00       |                                                                      |
