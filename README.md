@@ -14,4 +14,4 @@ In more detail, for each frame of the input video the system to be developed sho
 
 |  Matteo  | Marco    | Aaron    |
 |----------|----------|----------|
-| 03       | 00       | 00       |
+| 03       | 1000       | 00       |
