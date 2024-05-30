@@ -13,7 +13,9 @@ int main() {
     cv::Mat mask_frame_last = cv::imread("../data/game1_clip1/masks/frame_last.png");
 
 
-    showImage(image_frame_first, "Display Image");
+    showImage(image_frame_first, "Image Frame First");
+
+    showImage(image_frame_last, "Image Frame Last");
 
     return 0;
 }
