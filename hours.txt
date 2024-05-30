@@ -1,2 +1,0 @@
-      | Matteo | Marco | Aaron |
-hours |    3   |    0  |   0   |
