@@ -1,1 +1,3 @@
 # CV_Project
+
+The goal of this project is to develop a computer vision system for analyzing video footage of various “Eight Ball” billiard game events. Eight Ball is a call shot game played with a cue ball (white ball) and fifteen object balls, numbered 1 through 15. One player must pocket balls of the group numbered 1 through 7 (solid colors), while the other player targets balls numbered 9 thru 15 (stripes); the black ball numbered as 8 (“8-ball”) has a special role and must be pocketed at last. The player pocketing all his/her group first and then pocketing the 8-ball wins the match.
