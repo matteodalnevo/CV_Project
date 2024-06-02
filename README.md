@@ -12,17 +12,17 @@ In more detail, for each frame of the input video the system to be developed sho
 
 # Table of working Hours
 
-|  Matteo  |   Hours  |                                                                      |
+|          |   Hours  |                                                                      |
 |----------|----------|----------------------------------------------------------------------|
-|          |    03    | Set up for the project / import the dataset                          |
+| Matteo   |    03    | Set up for the project / import the dataset                          |
 |          |    02    | Planning                                                             |
 |          |    00    |                                                                      |
 |          |    00    |                                                                      |
-|  Marco   |    00    | Planning                                                             |
+|  Marco   |    02    | Planning                                                             |
 |          |    00    |                                                                      |
 |          |    00    |                                                                      |
 |          |    00    |                                                                      |
-|  Aaron   |    00    | Planning                                                             |
+|  Aaron   |    02    | Planning                                                             |
 |          |    00    |                                                                      |
 |          |    00    |                                                                      |
 |          |    00    |                                                                      |
