@@ -14,7 +14,8 @@ include_directories(include)
 
 # Add executable targets
 add_executable(main src/main.cpp
-               src/utils.cpp)
+               src/utils.cpp
+               src/ballDetection.cpp)
 
 target_link_libraries(main ${OpenCV_LIBS})
 
