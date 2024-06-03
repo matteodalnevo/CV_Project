@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 #include "utils.h"
+#include "ballDetection.h"
+#include "tableDetection.h"
+#include "homography.h"
 
 
 int main() {

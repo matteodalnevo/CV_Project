@@ -5,7 +5,6 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
-#include <string>
 
 cv::Mat ballDetection(const cv::Mat& image);
 
