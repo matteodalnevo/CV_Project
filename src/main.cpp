@@ -37,5 +37,10 @@ int main() {
     // Call the function to show an image
     showImage(colorImage, " Color Image First");
 
+    // Test the functions
+    ballDetection(colorImage);
+    homography(colorImage);
+    tableDetection(colorImage);
+    
     return 0;
 }
