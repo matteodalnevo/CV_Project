@@ -18,11 +18,3 @@ In more detail, for each frame of the input video the system to be developed sho
 |          |    02    | Planning                                                             |
 |          |    02    | Set Up                                                               |
 |          |    00    |                                                                      |
-|  Marco   |    02    | Planning                                                             |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|  Aaron   |    02    | Planning                                                             |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
