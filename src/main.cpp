@@ -26,7 +26,7 @@ int main() {
         }
     }
     */
-   
+
     // Create color image
     cv::Mat colorImage;
     // Call the function to segment the mask

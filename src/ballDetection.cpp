@@ -13,24 +13,28 @@ cv::Mat ballDetection(const cv::Mat& image) {
     std::vector<cv::Vec3f> circles;  // Vector to store detected circles
     cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows/32, 50, 13, 6, 10);  // Detect circles using Hough Transform
 
+    // Create an overlay image
+    cv::Mat overlay;
+    image.copyTo(overlay);
+
     // plotting detected signs
-    cv::Mat circle_plot(image.size(), image.type(), cv::Scalar(0, 0, 0));
     for(size_t i=0; i<circles.size(); i++){
         cv::Vec3i c = circles[i];
         cv::Point center = cv::Point(c[0], c[1]);
         int radius = c[2];
-        // Draw filled circles with transparent red on the original image
-        cv::circle(circle_plot, center, radius, cv::Scalar(0, 0, 255), -1, cv::LINE_AA);
+        // Define the bounding box
+        cv::Rect boundingBox(center.x - radius, center.y - radius, radius * 2, radius * 2);
+
+        // Draw the bounding box
+        cv::rectangle(overlay, boundingBox, cv::Scalar(0, 0, 255), -1);
+        cv::rectangle(image, boundingBox, cv::Scalar(0, 0, 255), 1);
+
         std::cout << radius << std::endl;
     }
     
-    // Convert the potential markings to BGR for visualization
-    cv::Mat potential_mark = cv::Mat::zeros(image.size(), CV_8UC3);
-    potential_mark.setTo(cv::Scalar(0, 0, 255), circle_plot); // Set potential markings to red
+    // Blend the overlay with the original image
+    double alpha = 0.5; // Transparency factor
+    cv::addWeighted(overlay, alpha, image, 1 - alpha, 0, image);
 
-    // Merge the original image with the potential balls
-    cv::Mat result;
-    cv::addWeighted(image, 0.5, potential_mark, 0.5, 0, result);
-    
-    return result;
+    return image;
 }
