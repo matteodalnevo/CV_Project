@@ -26,10 +26,11 @@ cv::Mat ballDetection(const cv::Mat& image) {
         cv::Rect boundingBox(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
         // Draw the bounding box
-        cv::rectangle(overlay, boundingBox, cv::Scalar(0, 0, 255), -1);
         cv::rectangle(image, boundingBox, cv::Scalar(0, 0, 255), 1);
+        // Fill it
+        cv::rectangle(overlay, boundingBox, cv::Scalar(0, 0, 255), -1);
 
-        std::cout << radius << std::endl;
+        // std::cout << radius << std::endl;
     }
     
     // Blend the overlay with the original image

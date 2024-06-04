@@ -17,4 +17,14 @@ In more detail, for each frame of the input video the system to be developed sho
 | Matteo   |    03    | Set up for the project / import the dataset                          |
 |          |    02    | Planning                                                             |
 |          |    02    | Set Up                                                               |
-|          |    00    |                                                                      |
+|          |   01:30  | Hough Cirlce and bounding boxes                                      |
+|          |
+|          |
+|          |
+|          |
+|          |
+|          |
+|          |
+|          |
+|          |
+|          |
