@@ -7,15 +7,11 @@ cv::Mat ballDetection(const cv::Mat& image) {
     // Convert image to grayscale
     cv::Mat gray(image.rows, image.cols, CV_8UC1);  // Create a grayscale image matrix
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);  // Convert the input image to grayscale
-    cv::GaussianBlur(gray, gray, cv::Size(9, 9), 2, 2);  // Apply Gaussian blur to reduce noise
-
-    cv::imshow("Blurred image", gray);
-    // Wait for any keystroke in the window
-    cv::waitKey(0);
+    cv::GaussianBlur(gray, gray, cv::Size(3, 3), 2, 2);  // Apply Gaussian blur to reduce noise
 
     // detecting circles via Hough transform
     std::vector<cv::Vec3f> circles;  // Vector to store detected circles
-    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows/8, 100, 30, 10, 50);  // Detect circles using Hough Transform
+    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows/32, 50, 13, 6, 10);  // Detect circles using Hough Transform
 
     // plotting detected signs
     cv::Mat circle_plot(image.size(), image.type(), cv::Scalar(0, 0, 0));
@@ -25,6 +21,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
         int radius = c[2];
         // Draw filled circles with transparent red on the original image
         cv::circle(circle_plot, center, radius, cv::Scalar(0, 0, 255), -1, cv::LINE_AA);
+        std::cout << radius << std::endl;
     }
     
     // Convert the potential markings to BGR for visualization

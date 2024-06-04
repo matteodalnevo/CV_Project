@@ -17,7 +17,7 @@ int main() {
     cv::Mat mask_frame_last = cv::imread("../data/game1_clip1/masks/frame_last.png", cv::IMREAD_ANYDEPTH);
 
     std::vector<BoundingBox> bbox_frame_first;
-
+    /*
     // Call the function to read bounding boxes
     if (readBoundingBoxes("../data/game1_clip1/bounding_boxes/frame_first_bbox.txt", bbox_frame_first)) {
         // Display the data
@@ -25,7 +25,8 @@ int main() {
             std::cout << bbox.x << " " << bbox.y << " " << bbox.width << " " << bbox.height << " " << bbox.ID << std::endl;
         }
     }
-
+    */
+   
     // Create color image
     cv::Mat colorImage;
     // Call the function to segment the mask
