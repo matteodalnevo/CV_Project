@@ -1,7 +1,10 @@
 #include "ballDetection.h"
 #include <iostream>
 
-// Function to show an image
+// function for calc hist
+cv::Mat histogramCalculation(const cv::Mat& image);
+
+// Function for ball detection
 cv::Mat ballDetection(const cv::Mat& image) {
 
     // Convert image to grayscale
@@ -26,6 +29,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
         cv::Rect boundingBox(center.x - radius, center.y - radius, radius * 2, radius * 2);
 
         //cv::Mat dst = image(boundingBox);
+        //cv::Mat hist = histogramCalculation(gray(boundingBox));
         //cv::imshow("roi", dst);
         //cv::waitKey(0);
 
@@ -42,4 +46,36 @@ cv::Mat ballDetection(const cv::Mat& image) {
     cv::addWeighted(overlay, alpha, image, 1 - alpha, 0, image);
 
     return image;
+}
+
+
+cv::Mat histogramCalculation(const cv::Mat& image){
+    // Calculate histogram
+    cv::Mat hist;
+    int histSize = 256; // Number of bins
+    float range[] = {0, 256}; // Range of pixel values
+    const float* histRange = {range};
+    cv::calcHist(&image, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange);
+
+    // Plot histogram
+    int histWidth = 512;
+    int histHeight = 400;
+    int binWidth = cvRound(static_cast<double>(histWidth) / histSize);
+    cv::Mat histImage(histHeight, histWidth, CV_8UC1, cv::Scalar(255));
+
+    // Normalize the histogram
+    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+
+    // Draw the histogram
+    for (int i = 0; i < histSize; i++) {
+        cv::rectangle(histImage, cv::Point(binWidth * i, histHeight),
+                cv::Point(binWidth * (i + 1), histHeight - cvRound(hist.at<float>(i))),
+                cv::Scalar(0), -1, 8, 0);
+    }
+
+    // Display histogram
+    cv::imshow("Histogram (Bins: " + std::to_string(histSize) + ")", histImage);
+    //cv::waitKey(0);
+
+    return histImage;
 }
