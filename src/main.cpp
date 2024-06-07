@@ -40,7 +40,7 @@ int main() {
     // Test the functions
     ballDetection(colorImage);
     homography(colorImage);
-    tableDetection(colorImage);
+    tableDetection(image_frame_first);
     
     return 0;
 }
