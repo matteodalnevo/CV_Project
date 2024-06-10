@@ -16,5 +16,7 @@ static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour);
 cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2);
 std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert);
 cv::Mat tableDetection(const cv::Mat& image);
+static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right); 
+cv::Vec2f findMediumLine(std::vector<cv::Vec2f> lineVector);    
 
 #endif // TABLEDETECTION_H

@@ -18,41 +18,51 @@
 cv::Mat tableDetection(const cv::Mat& image) {
  
     int lowThreshold = 40, upperThreshold = 80, blur_kernel = 3;
-    cv::Mat img_gray, detected_edges, out_hough;
+    cv::Mat img_gray, detected_edges, out_hough, final_edges;
     cvtColor(image, img_gray, cv::COLOR_BGR2GRAY);
     cv::blur( img_gray, detected_edges, cv::Size(blur_kernel, blur_kernel) );
     cv::Canny( detected_edges, detected_edges, lowThreshold, upperThreshold, 3 );
 
     // Copy edges to the images that will display the results in BGR
     cvtColor(detected_edges, out_hough, cv::COLOR_GRAY2BGR);
+    cvtColor(detected_edges, final_edges, cv::COLOR_GRAY2BGR);
 
     // Standard Hough Line Transform
     std::vector<cv::Vec2f> lines, verticalLines, horizontalLines; // will hold the results of the detection
     HoughLines(detected_edges, lines, 1, CV_PI/180, 180, 0, 0 ); // runs the actual detection
     auto [meanHoriz, meanVert] = splitHorVertLines(lines, horizontalLines, verticalLines);
-    //auto [topHoriz, lowHoriz, leftVert, rightVert] = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
-    auto [topHoriz, lowHoriz, leftVert, rightVert] = findRepresentativeLine(horizontalLines, verticalLines, meanVert, meanHoriz);
-    drawSingleLine(topHoriz, out_hough, cv::Scalar(255, 0, 255));
-    drawSingleLine(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
-    drawSingleLine(leftVert, out_hough, cv::Scalar(0, 255, 255));
-    drawSingleLine(rightVert, out_hough, cv::Scalar(255, 255, 0));
+    auto [topHoriz, lowHoriz, leftVert, rightVert] = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
 
-    //drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
-    //drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
-    //drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
-    //drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0));
-    //showImage(out_hough, "Final");
-    auto [pt1, pt2, pt3, pt4] = computeCorners(topHoriz, lowHoriz, leftVert, rightVert);
+    drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
+    drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
+    drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
+    drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0));
+    
+    cv::Vec2f vertSx, vertDx, horizUp, horizBot;
+    vertSx = findMediumLine(leftVert);
+    vertDx = findMediumLine(rightVert);
+    horizUp = findMediumLine(topHoriz);
+    horizBot = findMediumLine(lowHoriz);    
+    checkLeftRight(vertSx, vertDx);
+
+    cv::imshow("Final corners with Roi", final_edges);
+    drawSingleLine(horizUp, final_edges, cv::Scalar(255, 0, 255));
+    drawSingleLine(horizBot, final_edges, cv::Scalar(0, 255, 0));
+    drawSingleLine(vertSx, final_edges, cv::Scalar(0, 255, 255));
+    drawSingleLine(vertDx, final_edges, cv::Scalar(255, 255, 0));
+    
+    
+    auto [pt1, pt2, pt3, pt4] = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
     //Draw the points on the image
-    cv::circle(out_hough, pt1, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(out_hough, pt2, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(out_hough, pt3, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(out_hough, pt4, 10, cv::Scalar(0, 0, 255), 5);
+    cv::circle(final_edges, pt1, 10, cv::Scalar(0, 0, 255), 5);
+    cv::circle(final_edges, pt2, 10, cv::Scalar(0, 0, 255), 5);
+    cv::circle(final_edges, pt3, 10, cv::Scalar(0, 0, 255), 5);
+    cv::circle(final_edges, pt4, 10, cv::Scalar(0, 0, 255), 5);
     std::vector<cv::Point> vertices = {pt1, pt2, pt3, pt4};
     
-    cv::fillPoly(out_hough, vertices, cv::Scalar(0, 50, 200));
-    cv::imshow("Final corners with Roi", out_hough);
+    cv::fillPoly(final_edges, vertices, cv::Scalar(0, 50, 200));
+    cv::imshow("Final corners with Roi", final_edges);
     cv::waitKey(0);
 
     std::cout << "Now we begin GrabCut, don't press anything, just wait... " << std::endl;
@@ -249,6 +259,31 @@ std::tuple<cv::Vec2f, cv::Vec2f, cv::Vec2f, cv::Vec2f> findRepresentativeLine(st
     meanThetaTop = meanThetaTop / topHoriz.size();
     meanThetaLow = meanThetaLow / lowHoriz.size();
     return std::make_tuple(cv::Vec2f(meanRhoTop, meanThetaTop), cv::Vec2f(meanRhoLow, meanThetaLow), cv::Vec2f(meanRhoLeft, meanThetaLeft), cv::Vec2f(meanRhoRight, meanThetaRight));
+}
+
+cv::Vec2f findMediumLine(std::vector<cv::Vec2f> lineVector) {
+    float rho = 0, theta = 0;
+    for (size_t i = 0; i < lineVector.size(); i++) {
+        rho += lineVector[i][0];
+        theta += lineVector[i][1];
+    }
+    rho = rho / lineVector.size();
+    theta = theta / lineVector.size();
+
+    return cv::Vec2f(rho, theta);
+}
+
+static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right) {
+        if (left[0] <= 0) {
+        float temp1;
+        temp1 = right[0];
+        right[0] = left[0];
+        left[0] = temp1;
+
+        temp1 = right[1];
+        right[1] = left[1];
+        left[1] = temp1;
+    }
 }
 
 cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
