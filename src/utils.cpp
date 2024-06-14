@@ -14,6 +14,7 @@ void showImage(const cv::Mat& image, const std::string& windowName) {
 
     // Wait for any keystroke in the window
     cv::waitKey(0);
+    cv::destroyAllWindows();
 }
 
 // Function to read bounding boxes from a file

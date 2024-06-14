@@ -19,9 +19,9 @@ In more detail, for each frame of the input video the system to be developed sho
 |          |    02    | Set Up                                                               |
 |          |   01:30  | Hough Cirlce and bounding boxes                                      |
 |          |    02    | Discussions with the prof and creation of the ROI                    |
-|          |
-|          |
-|          |
+|          |    04    | Haar study
+|          |    03    | Call                                                                 |
+|          |    04    | TEST HOUGH                                                           |
 |          |
 |          |
 |          |

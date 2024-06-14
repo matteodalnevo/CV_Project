@@ -10,11 +10,27 @@ cv::Mat ballDetection(const cv::Mat& image) {
     // Convert image to grayscale
     cv::Mat gray;  // Create a grayscale image matrix
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);  // Convert the input image to grayscale
-    cv::GaussianBlur(gray, gray, cv::Size(5, 5), 2, 2);  // Apply Gaussian blur to reduce noise
+    cv::GaussianBlur(gray, gray, cv::Size(5,5), 1.5, 1.5);  // Apply Gaussian blur to reduce noise
+    cv::imshow("Gray image", gray);
+    /*
+    // Convert to float
+    cv::Mat floatImage;
+    gray.convertTo(floatImage, CV_32F, 1.0 / 255);
 
+    double gamma = 3;
+    // Apply gamma correction
+    cv::Mat gammaImage;
+    cv::pow(floatImage, gamma, gammaImage);
+
+    // Convert back to 8-bit
+    gammaImage.convertTo(gray, CV_8U, 255);
+
+    cv::imshow("Gray image modded", gray);
+    */
+   
     // detecting circles via Hough transform
     std::vector<cv::Vec3f> circles;  // Vector to store detected circles
-    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows/32, 50, 13, 6, 14);  // Detect circles using Hough Transform
+    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT_ALT, 2, gray.rows/64, 70, 0.9, 0, 15);  // Detect circles using Hough Transform
 
     // Create an overlay image
     cv::Mat overlay;
