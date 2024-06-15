@@ -7,11 +7,48 @@
 #include "homography.h"
 
 
-int main() {
+// Function to load, process, display and save images
+void processImages(const std::string& path_first, const std::string& path_last, const std::string& output_prefix, const std::string& clip_desc) {
+    cv::Mat image_frame_first = cv::imread(path_first);
+    cv::Mat image_frame_last = cv::imread(path_last);
+    
+    if (!image_frame_first.empty()) {
+        cv::Mat result_first = ballDetection(image_frame_first);
+        showImage(result_first, clip_desc + " first");
+        // cv::imwrite(output_prefix + "_first.png", result_first);
+    } else {
+        std::cerr << "Error loading image: " << path_first << std::endl;
+    }
 
-    // Load the dataset game 1
-    cv::Mat image_frame_first = cv::imread("../data/game1_clip1/frames/frame_first.png");
-    cv::Mat image_frame_last = cv::imread("../data/game1_clip1/frames/frame_last.png");
+    if (!image_frame_last.empty()) {
+        cv::Mat result_last = ballDetection(image_frame_last);
+        showImage(result_last, clip_desc + " last");
+        // cv::imwrite(output_prefix + "_last.png", result_last);
+    } else {
+        std::cerr << "Error loading image: " << path_last << std::endl;
+    }
+}
+
+int main() {
+    // Game 1 Clips
+    processImages("../data/game1_clip1/frames/frame_first.png", "../data/game1_clip1/frames/frame_last.png", "game1clip1", "Game 1 Clip 1");
+    processImages("../data/game1_clip2/frames/frame_first.png", "../data/game1_clip2/frames/frame_last.png", "game1clip2", "Game 1 Clip 2");
+    processImages("../data/game1_clip3/frames/frame_first.png", "../data/game1_clip3/frames/frame_last.png", "game1clip3", "Game 1 Clip 3");
+    processImages("../data/game1_clip4/frames/frame_first.png", "../data/game1_clip4/frames/frame_last.png", "game1clip4", "Game 1 Clip 4");
+
+    // Game 2 Clips
+    processImages("../data/game2_clip1/frames/frame_first.png", "../data/game2_clip1/frames/frame_last.png", "game2clip1", "Game 2 Clip 1");
+    processImages("../data/game2_clip2/frames/frame_first.png", "../data/game2_clip2/frames/frame_last.png", "game2clip2", "Game 2 Clip 2");
+
+    // Game 3 Clips
+    processImages("../data/game3_clip1/frames/frame_first.png", "../data/game3_clip1/frames/frame_last.png", "game3clip1", "Game 3 Clip 1");
+    processImages("../data/game3_clip2/frames/frame_first.png", "../data/game3_clip2/frames/frame_last.png", "game3clip2", "Game 3 Clip 2");
+
+    // Game 4 Clips
+    processImages("../data/game4_clip1/frames/frame_first.png", "../data/game4_clip1/frames/frame_last.png", "game4clip1", "Game 4 Clip 1");
+    processImages("../data/game4_clip2/frames/frame_first.png", "../data/game4_clip2/frames/frame_last.png", "game4clip2", "Game 4 Clip 2");
+
+    return 0;
 
     /*
     cv::Mat mask_frame_first = cv::imread("../data/game2_clip1/masks/frame_first.png", cv::IMREAD_ANYDEPTH);
@@ -36,108 +73,4 @@ int main() {
     // Call the function to show an image
     showImage(colorImage, "image");
     */
-
-    // Test the ball detection function
-    cv::Mat result = ballDetection(image_frame_first);
-    showImage(result, "Game 1 Clip 1 first");
-    cv::imwrite("game1clip1_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 1 Clip 1 last");
-    cv::imwrite("game1clip1_last.png", result);
-
-
-    image_frame_first = cv::imread("../data/game1_clip2/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game1_clip2/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 1 Clip 2 first");
-    cv::imwrite("game1clip2_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 1 Clip 2 last");
-    cv::imwrite("game1clip2_last.png", result);
-
-    image_frame_first = cv::imread("../data/game1_clip3/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game1_clip3/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 1 Clip 3 first");
-    cv::imwrite("game1clip3_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 1 Clip 3 last");
-    cv::imwrite("game1clip3_last.png", result);
-
-    image_frame_first = cv::imread("../data/game1_clip4/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game1_clip4/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 1 Clip 4 first");
-    cv::imwrite("game1clip4_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 1 Clip 4 last");
-    cv::imwrite("game1clip4_last.png", result);
-
-    
-    image_frame_first = cv::imread("../data/game2_clip1/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game2_clip1/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 2 Clip 1 first");
-    cv::imwrite("game2clip1_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 2 Clip 1 last");
-    cv::imwrite("game2clip1_last.png", result);
-
-    image_frame_first = cv::imread("../data/game2_clip2/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game2_clip2/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 2 Clip 2 first");
-    cv::imwrite("game2clip2_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 2 Clip 2 last");
-    cv::imwrite("game2clip2_last.png", result);
-
-    image_frame_first = cv::imread("../data/game3_clip1/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game3_clip1/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 3 Clip 1 first");
-    cv::imwrite("game3clip1_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 3 Clip 1 last");
-    cv::imwrite("game3clip1_last.png", result);
-
-    image_frame_first = cv::imread("../data/game3_clip2/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game3_clip2/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 3 Clip 2 first");
-    cv::imwrite("game3clip2_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 3 Clip 2 last");
-    cv::imwrite("game3clip2_last.png", result);
-
-    image_frame_first = cv::imread("../data/game4_clip1/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game4_clip1/frames/frame_last.png");
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 4 Clip 1 first");
-    cv::imwrite("game4clip1_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 4 Clip 1 last");
-    cv::imwrite("game4clip1_last.png", result);
-
-    image_frame_first = cv::imread("../data/game4_clip2/frames/frame_first.png");
-    image_frame_last = cv::imread("../data/game4_clip2/frames/frame_last.png");
-
-    result = ballDetection(image_frame_first);
-    showImage(result, "Game 4 Clip 2 first");
-    cv::imwrite("game4clip2_first.png", result);
-
-    result = ballDetection(image_frame_last);
-    showImage(result, "Game 4 Clip 2 last");
-    cv::imwrite("game4clip2_last.png", result);
-
-    return 0;
 }
