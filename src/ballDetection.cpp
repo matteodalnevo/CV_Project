@@ -129,6 +129,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
     cv::imshow("Mask Image", mask);
 
     // MORPHOLOGICAL OPERATION FOR BALLS SHAPING
+
     int morph_size = 3; // Adjust size as needed
     cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE,
                                                 cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
@@ -140,10 +141,12 @@ cv::Mat ballDetection(const cv::Mat& image) {
     cv::imshow("Morphologically Processed Mask", morphResult);
 
     // HOUGH CIRCLES DETECTION
+
     std::vector<cv::Vec3f> circles;  // Vector to store detected circles
     cv::HoughCircles(morphResult, circles, cv::HOUGH_GRADIENT_ALT, 2, mask.rows/64, 50, 0.5, 5, 15);  // Detect circles using Hough Transform
 
     // BOUNDING BOXES PLOTTING
+    
     cv::Mat overlay;
     image.copyTo(overlay);
 
