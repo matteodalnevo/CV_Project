@@ -60,7 +60,7 @@ int main() {
     result = ballDetection(image_frame_last);
     showImage(result, "Game 1 Clip 4");
 
-    /*
+    
     image_frame_first = cv::imread("../data/game2_clip1/frames/frame_first.png");
     image_frame_last = cv::imread("../data/game2_clip1/frames/frame_last.png");
     result = ballDetection(image_frame_last);
@@ -90,7 +90,7 @@ int main() {
     image_frame_last = cv::imread("../data/game4_clip2/frames/frame_last.png");
     result = ballDetection(image_frame_last);
     showImage(result, "Game 4 Clip 2");
-    */
+    
 
     return 0;
 }
