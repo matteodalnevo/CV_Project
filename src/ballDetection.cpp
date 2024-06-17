@@ -99,7 +99,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
     // MASKING BASED ON THE TABLE COLOR
     
     // Threshold for color similarity (adjust as needed)
-    double similarityThreshold = 70.0; // Example threshold
+    double similarityThreshold = 70.0; // Threshold
     
     // Create a mask
     cv::Mat mask(image.size(), CV_8UC1, cv::Scalar(0));  // Initialize mask image with zeros
@@ -130,20 +130,58 @@ cv::Mat ballDetection(const cv::Mat& image) {
 
     // MORPHOLOGICAL OPERATION FOR BALLS SHAPING
 
-    int morph_size = 3; // Adjust size as needed
+    int morph_size = 1; // Adjust size as needed
     cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE,
                                                 cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
                                                 cv::Point(morph_size, morph_size));
 
-    // Apply dilation followed by erosion (closing)
+    
     cv::Mat morphResult;
-    cv::morphologyEx(mask, morphResult, cv::MORPH_CLOSE, element);
-    cv::imshow("Morphologically Processed Mask", morphResult);
+    cv::morphologyEx(mask, morphResult, cv::MORPH_OPEN, element);
+    cv::imshow("Morphologically Processed Mask OPEN", morphResult);
+
+    
+    morph_size = 10; // Adjust size as needed
+    element = cv::getStructuringElement(cv::MORPH_ELLIPSE,
+                                                cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
+                                                cv::Point(morph_size, morph_size));
+
+    // Apply dilation followed by erosion (closing)
+    cv::morphologyEx(morphResult, morphResult, cv::MORPH_CLOSE, element);
+    cv::imshow("Morphologically Processed Mask CLOSE", morphResult);
+    
 
     // HOUGH CIRCLES DETECTION
 
+    // Canny detector
+    cv::Mat edges;
+    double upper_threshold = 70;
+    double lower_threshold = lower_threshold/2;
+    cv::Canny(morphResult, edges, lower_threshold, upper_threshold);
+    cv::imshow("Edges", edges);
+
+    // Apply Hough Line Transform
+    std::vector<cv::Vec2f> lines;
+    cv::HoughLines(edges, lines, 1, CV_PI / 180, 110);
+
+    // Draw the lines
+    for (size_t i = 0; i < lines.size(); i++) {
+        float rho = lines[i][0];
+        float theta = lines[i][1];
+        double a = cos(theta);
+        double b = sin(theta);
+        double x0 = a * rho;
+        double y0 = b * rho;
+        cv::Point pt1(cvRound(x0 + 1000 * (-b)), cvRound(y0 + 1000 * (a)));
+        cv::Point pt2(cvRound(x0 - 1000 * (-b)), cvRound(y0 - 1000 * (a)));
+        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+    }
+
+    // Display the result
+    cv::imshow("Detected Lines", image);
+
     std::vector<cv::Vec3f> circles;  // Vector to store detected circles
-    cv::HoughCircles(morphResult, circles, cv::HOUGH_GRADIENT_ALT, 2, mask.rows/64, 50, 0.5, 5, 15);  // Detect circles using Hough Transform
+    cv::HoughCircles(morphResult, circles, cv::HOUGH_GRADIENT_ALT, 2, mask.rows/64, 50, 0.5, 4, 20);  // Detect circles using Hough Transform
 
     // BOUNDING BOXES PLOTTING
     

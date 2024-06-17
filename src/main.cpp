@@ -30,24 +30,26 @@ void processImages(const std::string& path_first, const std::string& path_last, 
 }
 
 int main() {
+    
     // Game 1 Clips
     processImages("../data/game1_clip1/frames/frame_first.png", "../data/game1_clip1/frames/frame_last.png", "game1clip1", "Game 1 Clip 1");
+    
     processImages("../data/game1_clip2/frames/frame_first.png", "../data/game1_clip2/frames/frame_last.png", "game1clip2", "Game 1 Clip 2");
     processImages("../data/game1_clip3/frames/frame_first.png", "../data/game1_clip3/frames/frame_last.png", "game1clip3", "Game 1 Clip 3");
     processImages("../data/game1_clip4/frames/frame_first.png", "../data/game1_clip4/frames/frame_last.png", "game1clip4", "Game 1 Clip 4");
-
+    
     // Game 2 Clips
     processImages("../data/game2_clip1/frames/frame_first.png", "../data/game2_clip1/frames/frame_last.png", "game2clip1", "Game 2 Clip 1");
     processImages("../data/game2_clip2/frames/frame_first.png", "../data/game2_clip2/frames/frame_last.png", "game2clip2", "Game 2 Clip 2");
-
+    
     // Game 3 Clips
     processImages("../data/game3_clip1/frames/frame_first.png", "../data/game3_clip1/frames/frame_last.png", "game3clip1", "Game 3 Clip 1");
     processImages("../data/game3_clip2/frames/frame_first.png", "../data/game3_clip2/frames/frame_last.png", "game3clip2", "Game 3 Clip 2");
-
+    
     // Game 4 Clips
     processImages("../data/game4_clip1/frames/frame_first.png", "../data/game4_clip1/frames/frame_last.png", "game4clip1", "Game 4 Clip 1");
     processImages("../data/game4_clip2/frames/frame_first.png", "../data/game4_clip2/frames/frame_last.png", "game4clip2", "Game 4 Clip 2");
-
+    
     return 0;
 
     /*
