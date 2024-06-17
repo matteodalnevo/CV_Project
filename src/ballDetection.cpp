@@ -125,10 +125,10 @@ cv::Mat ballDetection(const cv::Mat& image) {
         }
     }
     
-    // Display original and processed image
+    // Display maske image
     cv::imshow("Mask Image", mask);
 
-    // MORPHOLOGICAL OPERATION FOR BALLS SHAPING
+    // MORPHOLOGICAL OPERATION FOR TABLE SHAPING
 
     int morph_size = 1; // Adjust size as needed
     cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE,
@@ -151,7 +151,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
     cv::imshow("Morphologically Processed Mask CLOSE", morphResult);
     
 
-    // HOUGH CIRCLES DETECTION
+    // HOUGH LINES DETECTION
 
     // Canny detector
     cv::Mat edges;
@@ -163,6 +163,7 @@ cv::Mat ballDetection(const cv::Mat& image) {
     // Apply Hough Line Transform
     std::vector<cv::Vec2f> lines;
     cv::HoughLines(edges, lines, 1, CV_PI / 180, 110);
+    
 
     // Draw the lines
     for (size_t i = 0; i < lines.size(); i++) {
@@ -176,35 +177,6 @@ cv::Mat ballDetection(const cv::Mat& image) {
         cv::Point pt2(cvRound(x0 - 1000 * (-b)), cvRound(y0 - 1000 * (a)));
         cv::line(image, pt1, pt2, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
     }
-
-    // Display the result
-    cv::imshow("Detected Lines", image);
-
-    std::vector<cv::Vec3f> circles;  // Vector to store detected circles
-    cv::HoughCircles(morphResult, circles, cv::HOUGH_GRADIENT_ALT, 2, mask.rows/64, 50, 0.5, 4, 20);  // Detect circles using Hough Transform
-
-    // BOUNDING BOXES PLOTTING
     
-    cv::Mat overlay;
-    image.copyTo(overlay);
-
-    // Plotting detected signs
-    for(size_t i=0; i<circles.size(); i++){
-        cv::Vec3i c = circles[i];
-        cv::Point center = cv::Point(c[0], c[1]);
-        int radius = c[2];
-        // Define the bounding box
-        cv::Rect boundingBox(center.x - radius, center.y - radius, radius * 2, radius * 2);
-
-        // Draw the bounding box
-        cv::rectangle(image, boundingBox, cv::Scalar(0, 0, 255), 1);
-        // Fill it
-        cv::rectangle(overlay, boundingBox, cv::Scalar(0, 0, 255), -1);
-    }
-
-    // Blend the overlay with the original image
-    double alpha = 0.5; // Transparency factor
-    cv::addWeighted(overlay, alpha, image, 1 - alpha, 0, image);
-
-    return image;
+   return image;
 }
