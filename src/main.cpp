@@ -60,7 +60,7 @@ int main() {
     std::vector<BoundingBox> bbox_frame_first;
 
     // Call the function to read bounding boxes
-    if (readBoundingBoxes("../data/game1_clip1/bounding_boxes/frame_first_bbox.txt", bbox_frame_first)) {
+    /* if (readBoundingBoxes("../data/game1_clip1/bounding_boxes/frame_first_bbox.txt", bbox_frame_first)) {
         // Display the data
         for (const auto& bbox : bbox_frame_first) {
             std::cout << bbox.x << " " << bbox.y << " " << bbox.width << " " << bbox.height << " " << bbox.ID << std::endl;
