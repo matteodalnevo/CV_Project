@@ -59,6 +59,8 @@ static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right);
  */
 cv::Vec2f findMediumLine(std::vector<cv::Vec2f> lineVector); 
 
-cv::Mat enhanceColourContrast (cv::Mat input_img);   
+cv::Mat enhanceColourContrast (cv::Mat input_img);
+
+cv::Mat computeMask(cv::Mat image); 
 
 #endif // TABLEDETECTION_H

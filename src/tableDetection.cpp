@@ -16,7 +16,9 @@ cv::Mat tableDetection(const cv::Mat& image) {
     // Copy edges to the images that will display the results in BGR
     cvtColor(detected_edges, out_hough, cv::COLOR_GRAY2BGR);
     cvtColor(detected_edges, final_edges, cv::COLOR_GRAY2BGR);
-
+    cv::imshow("Debug ", out_hough);
+    cv::waitKey(0);
+    cv::imwrite("game3_clip2_canny.png", out_hough);
     // Standard Hough Line Transform
     std::vector<cv::Vec2f> lines, verticalLines, horizontalLines; // will hold the results of the detection
     HoughLines(detected_edges, lines, 1, CV_PI/180, 180, 0, 0 ); // runs the actual detection
@@ -50,6 +52,11 @@ cv::Mat tableDetection(const cv::Mat& image) {
     
     auto [pt1, pt2, pt3, pt4] = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
+    //std::cout << "pt1: x = " << pt1.x << "   y = " << pt1.y << std::endl;
+    //std::cout << "pt2: x = " << pt2.x << "   y = " << pt2.y << std::endl;
+    //std::cout << "pt3: x = " << pt3.x << "   y = " << pt3.y << std::endl;
+    //std::cout << "pt4: x = " << pt4.x << "   y = " << pt4.y << std::endl;
+
     //Draw the points on the image
     cv::circle(final_edges, pt1, 10, cv::Scalar(0, 0, 255), 5);
     cv::circle(final_edges, pt2, 10, cv::Scalar(0, 0, 255), 5);
@@ -78,10 +85,12 @@ cv::Mat tableDetection(const cv::Mat& image) {
     image.copyTo(foreground, binaryMask);
     cv::imshow("Foreground Image", foreground);
 
-    cv::Mat hsv, maskera;
-    cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
-    cv::inRange(foreground, (36, 25, 25), (70, 255,255), maskera);
-    showImage(maskera, "Out inRange");
+    //cv::Mat hsv, maskera;
+    //cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
+    //cv::inRange(foreground, (36, 25, 25), (70, 255,255), maskera);
+    //showImage(maskera, "Out inRange");
+    //cv::Mat segmented = computeMask(foreground);
+    //showImage(segmented, "Boh");
 
     std::cout << "Table Detection OK" << std::endl;
 
@@ -154,7 +163,7 @@ static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colo
         float rho = lines[i][0], theta = lines[i][1];
         float theta_deg = theta * (180/M_PI);
         float slope = -cos(theta)/sin(theta), intercept = rho / sin(theta);
-        std::cout << "Rho: " << rho << "        Theta: " << theta << std::endl;
+        //std::cout << "Rho: " << rho << "        Theta: " << theta << std::endl;
         //std::cout << "Slope: " << slope << "        Intercept: " << intercept << std::endl;
         cv::Point pt1, pt2;
         double a = cos(theta), b = sin(theta);
@@ -201,7 +210,7 @@ std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f
             lastRho = verticalLine[i][0];
             if ((abs(lastTheta - rightVert[0][1]) > 0.2617)) {  //15 deg
                 rightVert.pop_back();
-                std::cout << "Miao" << std::endl;
+                //std::cout << "Miao" << std::endl;
             }
                 
             //meanRhoRight += verticalLine[i][0];
@@ -377,12 +386,59 @@ std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f 
     return std::make_tuple(pt1, pt2, pt3, pt4); //from top-left in clockwise order
 }
 
+cv::Mat computeMask(cv::Mat image) {
+    int rows = image.rows, cols = image.cols, thresholdz = 50;
+    std::vector<cv::Vec3b> color_acc;
+
+    // Accumulate colors that are not black
+    for (int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            if(image.at<cv::Vec3b>(i, j)[0] != 0 ||
+               image.at<cv::Vec3b>(i, j)[1] != 0 ||
+               image.at<cv::Vec3b>(i, j)[2] != 0) {
+                color_acc.push_back(image.at<cv::Vec3b>(i, j));
+            }
+        }
+    }
+
+    // Calculate the mean color
+    cv::Vec3d sumColor(0, 0, 0);
+    for(const auto& color : color_acc) {
+        sumColor[0] += color[0];
+        sumColor[1] += color[1];
+        sumColor[2] += color[2];
+    }
+    cv::Vec3b meanColor;
+    if (!color_acc.empty()) {
+        meanColor[0] = sumColor[0] / color_acc.size();
+        meanColor[1] = sumColor[1] / color_acc.size();
+        meanColor[2] = sumColor[2] / color_acc.size();
+    }
+
+    // Initialize the masked image with the same size and type as the input image
+    cv::Mat maskedImg = image.clone();
+
+    // Apply the mask based on the threshold
+    for (int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            cv::Vec3b temp = image.at<cv::Vec3b>(i, j);
+            cv::Vec3b diff = temp - meanColor;
+            if(abs(diff[0]) < thresholdz && abs(diff[1]) < thresholdz && abs(diff[2]) < thresholdz) {
+                maskedImg.at<cv::Vec3b>(i, j) = meanColor;
+            }
+        }
+    }
+
+    return maskedImg;
+}
+
 cv::Mat enhanceColourContrast (cv::Mat input_img) {
     cv::Mat out_img;
     std::vector<cv::Mat> hsv_mid;
     cv::cvtColor(input_img, out_img, cv::COLOR_BGR2HSV);
     cv::split(out_img, hsv_mid);
-    hsv_mid[1] *= 1.8;
+    hsv_mid[1] *= 2;
+    hsv_mid[2] *= 0.8;
     cv::merge(hsv_mid, out_img);
     cv::cvtColor(out_img, out_img, cv::COLOR_HSV2BGR);
 
