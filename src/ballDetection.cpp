@@ -163,20 +163,20 @@ cv::Mat ballDetection(const cv::Mat& image) {
     // Apply Hough Line Transform
     std::vector<cv::Vec2f> lines;
     cv::HoughLines(edges, lines, 1, CV_PI / 180, 110);
-    
 
-    // Draw the lines
+    // Draw the detected lines on the original image
     for (size_t i = 0; i < lines.size(); i++) {
         float rho = lines[i][0];
         float theta = lines[i][1];
-        double a = cos(theta);
-        double b = sin(theta);
-        double x0 = a * rho;
-        double y0 = b * rho;
-        cv::Point pt1(cvRound(x0 + 1000 * (-b)), cvRound(y0 + 1000 * (a)));
-        cv::Point pt2(cvRound(x0 - 1000 * (-b)), cvRound(y0 - 1000 * (a)));
-        cv::line(image, pt1, pt2, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+        cv::Point pt1, pt2;
+        double a = cos(theta), b = sin(theta);
+        double x0 = a*rho, y0 = b*rho;
+        pt1.x = cvRound(x0 + 1000*(-b));
+        pt1.y = cvRound(y0 + 1000*(a));
+        pt2.x = cvRound(x0 - 1000*(-b));
+        pt2.y = cvRound(y0 - 1000*(a));
+        line(image, pt1, pt2, cv::Scalar(0,0,255), 1, cv::LINE_AA);
     }
     
-   return image;
+    return image;
 }
