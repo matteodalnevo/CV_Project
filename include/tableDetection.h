@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+#include <tuple>
 
 //cv::Mat computeHist(cv::Mat image, int bins_number); 
 //static void computeMeanShift(int, void*);
@@ -46,7 +47,7 @@ cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2);
  */
 std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert);
 
-cv::Mat tableDetection(const cv::Mat& image);
+std::vector<cv::Point> tableDetection(std::vector<cv::Vec2f> lines);
 
 
 /** @brief Stupid check on left and right vertical lines, very hard-coded.

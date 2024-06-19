@@ -5,9 +5,10 @@
 
 
 // Function to show an image
-cv::Mat tableDetection(const cv::Mat& image) {
- 
-    int lowThreshold = 40, upperThreshold = 80, blur_kernel = 3;
+std::vector<cv::Point> tableDetection(const std::vector<cv::Vec2f> lines) {
+    
+    std::vector<cv::Vec2f> verticalLines, horizontalLines;
+    /*int lowThreshold = 40, upperThreshold = 80, blur_kernel = 3;
     cv::Mat img_gray, detected_edges, out_hough, final_edges;
     cvtColor(image, img_gray, cv::COLOR_BGR2GRAY);
     cv::blur( img_gray, detected_edges, cv::Size(blur_kernel, blur_kernel) );
@@ -17,23 +18,23 @@ cv::Mat tableDetection(const cv::Mat& image) {
     cvtColor(detected_edges, out_hough, cv::COLOR_GRAY2BGR);
     cvtColor(detected_edges, final_edges, cv::COLOR_GRAY2BGR);
     cv::imshow("Debug ", out_hough);
-    cv::waitKey(0);
-    cv::imwrite("game3_clip2_canny.png", out_hough);
     // Standard Hough Line Transform
-    std::vector<cv::Vec2f> lines, verticalLines, horizontalLines; // will hold the results of the detection
-    HoughLines(detected_edges, lines, 1, CV_PI/180, 180, 0, 0 ); // runs the actual detection
+     // will hold the results of the detection
+    HoughLines(detected_edges, lines, 1, CV_PI/180, 180, 0, 0 ); // runs the actual detection */
 
     //First split between horizontal and vertical lines
-    auto [meanHoriz, meanVert] = splitHorVertLines(lines, horizontalLines, verticalLines);
+    float meanHoriz, meanVert;
+    std::tie(meanHoriz, meanVert) = splitHorVertLines(lines, horizontalLines, verticalLines);
 
     //Second split between top, bottom, left, right
-    auto [topHoriz, lowHoriz, leftVert, rightVert] = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
+    std::vector<cv::Vec2f> topHoriz, lowHoriz, leftVert, rightVert;
+    std::tie(topHoriz, lowHoriz, leftVert, rightVert) = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
 
     //Drawing of the 4 groups of lines
-    drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
+    /* drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
     drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
     drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
-    drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0));
+    drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0)); */
     
     //Identify the mean line for each group
     cv::Vec2f vertSx, vertDx, horizUp, horizBot;
@@ -45,12 +46,13 @@ cv::Mat tableDetection(const cv::Mat& image) {
     //checkForStick();
 
     //Draw the single medium lines for each group
-    drawSingleLine(horizUp, final_edges, cv::Scalar(255, 0, 255));
+    /* drawSingleLine(horizUp, final_edges, cv::Scalar(255, 0, 255));
     drawSingleLine(horizBot, final_edges, cv::Scalar(0, 255, 0));
     drawSingleLine(vertSx, final_edges, cv::Scalar(0, 255, 255));
-    drawSingleLine(vertDx, final_edges, cv::Scalar(255, 255, 0));    
+    drawSingleLine(vertDx, final_edges, cv::Scalar(255, 255, 0));    */
     
-    auto [pt1, pt2, pt3, pt4] = computeCorners(horizUp, horizBot, vertSx, vertDx);
+    cv::Point pt1, pt2, pt3, pt4;
+    std::tie(pt1, pt2, pt3, pt4) = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
     //std::cout << "pt1: x = " << pt1.x << "   y = " << pt1.y << std::endl;
     //std::cout << "pt2: x = " << pt2.x << "   y = " << pt2.y << std::endl;
@@ -58,14 +60,19 @@ cv::Mat tableDetection(const cv::Mat& image) {
     //std::cout << "pt4: x = " << pt4.x << "   y = " << pt4.y << std::endl;
 
     //Draw the points on the image
-    cv::circle(final_edges, pt1, 10, cv::Scalar(0, 0, 255), 5);
+    /* cv::circle(final_edges, pt1, 10, cv::Scalar(0, 0, 255), 5);
     cv::circle(final_edges, pt2, 10, cv::Scalar(0, 0, 255), 5);
     cv::circle(final_edges, pt3, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(final_edges, pt4, 10, cv::Scalar(0, 0, 255), 5);
+    cv::circle(final_edges, pt4, 10, cv::Scalar(0, 0, 255), 5); */
     std::vector<cv::Point> vertices = {pt1, pt2, pt3, pt4};
+
+    std::cout << "PT1: x = " << pt1.x << "  y = " << pt1.y << std::endl;
+    std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
+    std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
+    std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
     
     //Check the input mask to the GrabCut algorithm
-    cv::fillPoly(final_edges, vertices, cv::Scalar(0, 50, 200));
+    /* cv::fillPoly(final_edges, vertices, cv::Scalar(0, 50, 200));
     cv::imshow("Final corners with Roi", final_edges);
     cv::waitKey(0);
 
@@ -83,7 +90,7 @@ cv::Mat tableDetection(const cv::Mat& image) {
     // Create the foreground image using the binary mask
     cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     image.copyTo(foreground, binaryMask);
-    cv::imshow("Foreground Image", foreground);
+    cv::imshow("Foreground Image", foreground); */
 
     //cv::Mat hsv, maskera;
     //cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
@@ -96,43 +103,8 @@ cv::Mat tableDetection(const cv::Mat& image) {
 
     cv::waitKey(0);
     
-    return foreground;
+    return vertices;
 }
-
-/*cv::Mat computeHist(cv::Mat image, int bins_number) {
-    // Set histogram parameters
-        int histSize[] = {bins_number}; // Number of bins
-        float range[] = {0, 256}; // Pixel value range (0-255)
-        const float* histRange[] = {range};
-        int channels[] = {0}; // Channel index
-
-        // Compute histogram
-        cv::Mat hist;
-        cv::calcHist(&image, 1, channels, cv::Mat(), hist, 1, histSize, histRange);
-
-        // Normalize the histogram
-        cv::normalize(hist, hist, 0, 255, cv::NORM_MINMAX);
-
-        // Create a black image to draw the histogram
-        int histWidth = 512;
-        int histHeight = 400;
-        cv::Mat histImage(histHeight, histWidth, CV_8UC1, cv::Scalar(0));
-
-        // Draw histogram
-        int binWidth = cvRound((double)histWidth / 256);
-        for (int i = 0; i < 256; ++i) {
-            cv::rectangle(histImage, cv::Point(binWidth * i, histHeight),
-                          cv::Point(binWidth * i + binWidth, histHeight - cvRound(hist.at<float>(i))),
-                          cv::Scalar(255), -1);
-        }
-    return histImage;
-}*/
- 
-/* static void computeMeanShift(int, void* ){
-    cv::pyrMeanShiftFiltering(hsv_img, outMeanShift, sp, sr);
-    cv::cvtColor(outMeanShift, outMeanShift, cv::COLOR_HSV2BGR);
-    cv::imshow("OutMeanShift", outMeanShift);
- }*/
 
 std::tuple<float, float> splitHorVertLines(std::vector<cv::Vec2f> lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines ){
     
@@ -222,7 +194,7 @@ std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f
             lastRho = verticalLine[i][0];
             if ((abs(lastTheta - leftVert[0][1]) > 0.2617)) {  //15 deg
                 leftVert.pop_back();
-                std::cout << "Miao" << std::endl;
+                //std::cout << "Miao" << std::endl;
             }
             //meanRhoLeft += verticalLine[i][0];
             //meanThetaLeft += verticalLine[i][1];
@@ -235,7 +207,7 @@ std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f
             lastTheta = horizontalLine[i][1];
             if ((abs(lastTheta - lowHoriz[0][1]) > 0.2617) || (abs(lastRho - lowHoriz[0][0]) > 75)) {  //15 deg
                 lowHoriz.pop_back();
-                std::cout << "Miao" << std::endl;
+                //std::cout << "Miao" << std::endl;
             }
             //meanRhoLow += horizontalLine[i][0];
             //meanThetaLow += horizontalLine[i][1];
@@ -246,7 +218,7 @@ std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f
             lastTheta = horizontalLine[i][1];
             if ((abs(lastTheta - topHoriz[0][1]) > 0.2617) || (abs(lastRho - topHoriz[0][0]) > 75)) { //15 deg
                 topHoriz.pop_back();
-                std::cout << "Miao" << std::endl;
+                //std::cout << "Miao" << std::endl;
             }
             //meanRhoTop += horizontalLine[i][0];
             //meanThetaTop += horizontalLine[i][1];
@@ -351,7 +323,7 @@ cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
     q2 = line2[0] / sin(line2[1]);
     if (( m1 == -INFINITY ))
     {   
-        std::cout << "ENTERED THE IF" << std::endl;
+        //std::cout << "ENTERED THE IF" << std::endl;
         float x = cvRound(line1[0]);
         float y = cvRound(m2 * x + q2);
 

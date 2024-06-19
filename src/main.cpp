@@ -5,6 +5,7 @@
 #include "ballDetection.h"
 #include "tableDetection.h"
 #include "homography.h"
+#include "preProcess.h"
 
 
 // Function to load, process, display and save images
@@ -13,7 +14,12 @@ void processImages(const std::string& path_first, const std::string& path_last, 
     cv::Mat image_frame_last = cv::imread(path_last);
     
     if (!image_frame_first.empty()) {
-        cv::Mat result_first = ballDetection(image_frame_first);
+        //cv::Mat result_first = preProcess(image_frame_first);
+        cv::Mat result_first;
+        std::vector<cv::Vec2f> first_detected_lines;
+        std::tie(result_first, first_detected_lines) = preProcess(image_frame_first);
+        std::cout << "FIRST FRAME POINTS..." << std::endl;
+        tableDetection(first_detected_lines);
         showImage(result_first, clip_desc + " first");
         // cv::imwrite(output_prefix + "_first.png", result_first);
     } else {
@@ -21,7 +27,12 @@ void processImages(const std::string& path_first, const std::string& path_last, 
     }
 
     if (!image_frame_last.empty()) {
-        cv::Mat result_last = ballDetection(image_frame_last);
+        // cv::Mat result_last = preProcess(image_frame_last);
+        cv::Mat result_last;
+        std::vector<cv::Vec2f> last_detected_lines;
+        std::tie(result_last, last_detected_lines) = preProcess(image_frame_last);
+        std::cout << "FIRST FRAME POINTS..." << std::endl;
+        tableDetection(last_detected_lines);
         showImage(result_last, clip_desc + " last");
         // cv::imwrite(output_prefix + "_last.png", result_last);
     } else {
