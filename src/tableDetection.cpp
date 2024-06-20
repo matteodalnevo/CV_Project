@@ -321,7 +321,7 @@ cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
     m2 = -(cos(line2[1]) / sin(line2[1]));
     q1 = line1[0] / sin(line1[1]);
     q2 = line2[0] / sin(line2[1]);
-    if (( m1 == -INFINITY ))
+    if ( m1 == -INFINITY )
     {   
         //std::cout << "ENTERED THE IF" << std::endl;
         float x = cvRound(line1[0]);
@@ -395,7 +395,7 @@ cv::Mat computeMask(cv::Mat image) {
         for(int j = 0; j < cols; j++) {
             cv::Vec3b temp = image.at<cv::Vec3b>(i, j);
             cv::Vec3b diff = temp - meanColor;
-            if(abs(diff[0]) < thresholdz && abs(diff[1]) < thresholdz && abs(diff[2]) < thresholdz) {
+            if(diff[0] < thresholdz && diff[1] < thresholdz && diff[2] < thresholdz) {
                 maskedImg.at<cv::Vec3b>(i, j) = meanColor;
             }
         }
