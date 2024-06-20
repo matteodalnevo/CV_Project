@@ -6,6 +6,6 @@
 #include <string>
 #include <vector>
 
-cv::Mat ballDetection(const cv::Mat& image);
+cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices);
 
 #endif // BALLDETECTION_H

@@ -49,22 +49,6 @@ double calculateDistance(cv::Vec3b color1, cv::Vec3b color2) {
 
 // Function for ball detection
 std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
-    
-    /*
-    // Convert to float
-    cv::Mat floatImage;
-    gray.convertTo(floatImage, CV_32F, 1.0 / 255);
-
-    double gamma = 3;
-    // Apply gamma correction
-    cv::Mat gammaImage;
-    cv::pow(floatImage, gamma, gammaImage);
-
-    // Convert back to 8-bit
-    gammaImage.convertTo(gray, CV_8U, 255);
-
-    cv::imshow("Gray image modded", gray);
-    */
 
     // CLUSTERING FOR DETECTION THE TABLE COLOR
 
@@ -87,15 +71,15 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     cv::Scalar secondLargestColor = findClusterColor(centers, largestIndices[1]);
 
     // Display the second largest color
-    std::cout << "Table color (BGR): [" << secondLargestColor[0] << ", " << secondLargestColor[1] << ", " << secondLargestColor[2] << "]" << std::endl;
+    // std::cout << "Table color (BGR): [" << secondLargestColor[0] << ", " << secondLargestColor[1] << ", " << secondLargestColor[2] << "]" << std::endl;
 
     // Visualize the clusters
     cv::Mat clusteredImage = visualizeClusters(image, labels, centers);
-    cv::imshow("Clustered Image", clusteredImage);
+    // cv::imshow("Clustered Image", clusteredImage);
 
     // Visualize the second largest color
     cv::Mat color_display(100, 100, CV_8UC3, secondLargestColor);
-    cv::imshow("Table Color", color_display);
+    // cv::imshow("Table Color", color_display);
 
     // MASKING BASED ON THE TABLE COLOR
     
@@ -127,7 +111,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     }
     
     // Display maske image
-    cv::imshow("Mask Image", mask);
+    // cv::imshow("Mask Image", mask);
 
     // MORPHOLOGICAL OPERATION FOR TABLE SHAPING
 
@@ -139,7 +123,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     
     cv::Mat morphResult;
     cv::morphologyEx(mask, morphResult, cv::MORPH_OPEN, element);
-    cv::imshow("Morphologically Processed Mask OPEN", morphResult);
+    // cv::imshow("Morphologically Processed Mask OPEN", morphResult);
 
     
     morph_size = 10; // Adjust size as needed
@@ -149,7 +133,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
 
     // Apply dilation followed by erosion (closing)
     cv::morphologyEx(morphResult, morphResult, cv::MORPH_CLOSE, element);
-    cv::imshow("Morphologically Processed Mask CLOSE", morphResult);
+    // cv::imshow("Morphologically Processed Mask CLOSE", morphResult);
     
 
     // HOUGH LINES DETECTION
@@ -159,12 +143,12 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     double upper_threshold = 70;
     double lower_threshold = lower_threshold/2;
     cv::Canny(morphResult, edges, lower_threshold, upper_threshold);
-    cv::imshow("Edges", edges);
+    // cv::imshow("Edges", edges);
 
     // Apply Hough Line Transform
     std::vector<cv::Vec2f> lines;
     cv::HoughLines(edges, lines, 1, CV_PI / 180, 110);
-
+    /*
     // Draw the detected lines on the original image
     for (size_t i = 0; i < lines.size(); i++) {
         float rho = lines[i][0];
@@ -178,6 +162,6 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
         pt2.y = cvRound(y0 - 1000*(a));
         line(image, pt1, pt2, cv::Scalar(0,0,255), 1, cv::LINE_AA);
     }
-    
+    */
     return std::make_tuple(image, lines);
 }

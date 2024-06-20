@@ -100,8 +100,6 @@ std::vector<cv::Point> tableDetection(const std::vector<cv::Vec2f> lines) {
     //showImage(segmented, "Boh");
 
     std::cout << "Table Detection OK" << std::endl;
-
-    cv::waitKey(0);
     
     return vertices;
 }

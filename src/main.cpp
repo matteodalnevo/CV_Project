@@ -19,7 +19,9 @@ void processImages(const std::string& path_first, const std::string& path_last, 
         std::vector<cv::Vec2f> first_detected_lines;
         std::tie(result_first, first_detected_lines) = preProcess(image_frame_first);
         std::cout << "FIRST FRAME POINTS..." << std::endl;
-        tableDetection(first_detected_lines);
+        std::vector<cv::Point> first_corners;
+        first_corners = tableDetection(first_detected_lines);
+        result_first = ballDetection(image_frame_first, first_corners);
         showImage(result_first, clip_desc + " first");
         // cv::imwrite(output_prefix + "_first.png", result_first);
     } else {
@@ -31,8 +33,10 @@ void processImages(const std::string& path_first, const std::string& path_last, 
         cv::Mat result_last;
         std::vector<cv::Vec2f> last_detected_lines;
         std::tie(result_last, last_detected_lines) = preProcess(image_frame_last);
-        std::cout << "FIRST FRAME POINTS..." << std::endl;
-        tableDetection(last_detected_lines);
+        std::cout << "LAST FRAME POINTS..." << std::endl;
+        std::vector<cv::Point> last_corners;
+        last_corners = tableDetection(last_detected_lines);
+        result_last = ballDetection(image_frame_last, last_corners);
         showImage(result_last, clip_desc + " last");
         // cv::imwrite(output_prefix + "_last.png", result_last);
     } else {
@@ -71,7 +75,7 @@ int main() {
     std::vector<BoundingBox> bbox_frame_first;
 
     // Call the function to read bounding boxes
-    /* if (readBoundingBoxes("../data/game1_clip1/bounding_boxes/frame_first_bbox.txt", bbox_frame_first)) {
+    if (readBoundingBoxes("../data/game1_clip1/bounding_boxes/frame_first_bbox.txt", bbox_frame_first)) {
         // Display the data
         for (const auto& bbox : bbox_frame_first) {
             std::cout << bbox.x << " " << bbox.y << " " << bbox.width << " " << bbox.height << " " << bbox.ID << std::endl;
