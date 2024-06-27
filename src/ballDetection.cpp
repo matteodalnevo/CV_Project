@@ -97,17 +97,5 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-    cv::Vec3b medianColor = computeMedianColor(maskedImage);
-
-    // Set HSV threshold values
-    int hueThreshold = 20; // Example value, adjust as needed
-    int saturationThreshold = 70; // Example value, adjust as needed
-    int valueThreshold = 70; // Example value, adjust as needed
-    
-    // Segment the image based on computed median HSV color
-    cv::Mat segmentedMask = segmentByColor(maskedImage, medianColor, hueThreshold, saturationThreshold, valueThreshold);
-
-    
-
-    return segmentedMask;
+    return maskedImage;
 }
