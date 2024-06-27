@@ -76,6 +76,8 @@ void drawCircles(cv::Mat& image, const std::vector<cv::Vec3f>& circles) {
 // Use the corners
 cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     
+    // DRAW THE BOX PF THE TABLE
+
     // Make a copy of the input image to draw the rectangle on
     cv::Mat result = image.clone();
 
@@ -84,6 +86,8 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     contours.push_back(vertices);
     cv::polylines(result, contours, true, cv::Scalar(0, 255, 255), 2); // Green color with thickness 2
     //cv::imshow("Table Contours", result);
+
+    // CUT THE ORIGINAL IMAGE
 
     // Create a mask for the ROI
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Initialize mask with zeros (black)
@@ -95,5 +99,5 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-   return maskedImage;
+    return maskedImage;
 }
