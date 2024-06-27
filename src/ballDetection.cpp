@@ -2,16 +2,19 @@
 #include <iostream>
 
 cv::Vec3b computeMedianColor(const cv::Mat& image) {
-    std::vector<uchar> blue, green, red;
+    cv::Mat hsvImage;
+    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV); // Convert BGR to HSV
+    
+    std::vector<uchar> hue, saturation, value;
 
     // Extract pixel values for each channel, ignoring black pixels
-    for (int row = 0; row < image.rows; ++row) {
-        for (int col = 0; col < image.cols; ++col) {
-            cv::Vec3b color = image.at<cv::Vec3b>(row, col);
-            if (color != cv::Vec3b(0, 0, 0)) { // Ignore black pixels
-                blue.push_back(color[0]);
-                green.push_back(color[1]);
-                red.push_back(color[2]);
+    for (int row = 0; row < hsvImage.rows; ++row) {
+        for (int col = 0; col < hsvImage.cols; ++col) {
+            cv::Vec3b hsv = hsvImage.at<cv::Vec3b>(row, col);
+            if (hsv[2] > 0) { // Ignore black pixels
+                hue.push_back(hsv[0]);
+                saturation.push_back(hsv[1]);
+                value.push_back(hsv[2]);
             }
         }
     }
@@ -28,33 +31,28 @@ cv::Vec3b computeMedianColor(const cv::Mat& image) {
     };
 
     // Compute the median for each channel
-    uchar medianBlue = findMedian(blue);
-    uchar medianGreen = findMedian(green);
-    uchar medianRed = findMedian(red);
+    uchar medianHue = findMedian(hue);
+    uchar medianSaturation = findMedian(saturation);
+    uchar medianValue = findMedian(value);
 
-    return cv::Vec3b(medianBlue, medianGreen, medianRed);
+    return cv::Vec3b(medianHue, medianSaturation, medianValue);
 }
 
 
-cv::Mat segmentByColor(const cv::Mat& image, const cv::Vec3b& medianColor, int threshold) {
-    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
+cv::Mat segmentByColor(const cv::Mat& image, const cv::Vec3b& medianColorHSV, int hueThreshold, int saturationThreshold, int valueThreshold) {
+    cv::Mat hsvImage, mask;
+    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV); // Convert BGR to HSV
 
-    // Create mask based on the threshold range around the median color
-    for (int row = 0; row < image.rows; ++row) {
-        for (int col = 0; col < image.cols; ++col) {
-            cv::Vec3b color = image.at<cv::Vec3b>(row, col);
-            if (color != cv::Vec3b(0, 0, 0)) { // Ignore black pixels
-                if (abs(color[0] - medianColor[0]) < threshold &&
-                    abs(color[1] - medianColor[1]) < threshold &&
-                    abs(color[2] - medianColor[2]) < threshold) {
-                    mask.at<uchar>(row, col) = 255;
-                } else {
-                    mask.at<uchar>(row, col) = 0;
-                }
-            }
-        }
-    }
-    
+    // Create mask based on the threshold range around the median HSV color
+    cv::inRange(hsvImage,
+                cv::Scalar(medianColorHSV[0] - hueThreshold, medianColorHSV[1] - saturationThreshold, medianColorHSV[2] - valueThreshold),
+                cv::Scalar(medianColorHSV[0] + hueThreshold, medianColorHSV[1] + saturationThreshold, medianColorHSV[2] + valueThreshold),
+                mask);
+
+    // Apply morphological operations to improve shape
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel); // Closing operation to fill gaps
+
     return mask;
 }
 
@@ -99,5 +97,17 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-    return maskedImage;
+    cv::Vec3b medianColor = computeMedianColor(maskedImage);
+
+    // Set HSV threshold values
+    int hueThreshold = 20; // Example value, adjust as needed
+    int saturationThreshold = 70; // Example value, adjust as needed
+    int valueThreshold = 70; // Example value, adjust as needed
+    
+    // Segment the image based on computed median HSV color
+    cv::Mat segmentedMask = segmentByColor(maskedImage, medianColor, hueThreshold, saturationThreshold, valueThreshold);
+
+    
+
+    return segmentedMask;
 }
