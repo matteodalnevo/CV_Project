@@ -110,5 +110,5 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat segmentedImage(part1.rows, part1.cols, CV_8UC1);
     segmentByColor(part1, median1, 30, segmentedImage);
 
-    return segmentedImage;
+    return maskedImage;
 }
