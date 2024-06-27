@@ -2,19 +2,16 @@
 #include <iostream>
 
 cv::Vec3b computeMedianColor(const cv::Mat& image) {
-    cv::Mat hsvImage;
-    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV); // Convert BGR to HSV
-    
-    std::vector<uchar> hue, saturation, value;
+    std::vector<uchar> blue, green, red;
 
-    // Extract pixel values for each channel, ignoring black pixels
-    for (int row = 0; row < hsvImage.rows; ++row) {
-        for (int col = 0; col < hsvImage.cols; ++col) {
-            cv::Vec3b hsv = hsvImage.at<cv::Vec3b>(row, col);
-            if (hsv[2] > 0) { // Ignore black pixels
-                hue.push_back(hsv[0]);
-                saturation.push_back(hsv[1]);
-                value.push_back(hsv[2]);
+    // Extract pixel values for each channel, excluding black pixels ([0, 0, 0])
+    for (int row = 0; row < image.rows; ++row) {
+        for (int col = 0; col < image.cols; ++col) {
+            cv::Vec3b bgr = image.at<cv::Vec3b>(row, col);
+            if (bgr != cv::Vec3b(0, 0, 0)) { // Skip black pixels
+                blue.push_back(bgr[0]);
+                green.push_back(bgr[1]);
+                red.push_back(bgr[2]);
             }
         }
     }
@@ -31,30 +28,33 @@ cv::Vec3b computeMedianColor(const cv::Mat& image) {
     };
 
     // Compute the median for each channel
-    uchar medianHue = findMedian(hue);
-    uchar medianSaturation = findMedian(saturation);
-    uchar medianValue = findMedian(value);
+    uchar medianBlue = findMedian(blue);
+    uchar medianGreen = findMedian(green);
+    uchar medianRed = findMedian(red);
 
-    return cv::Vec3b(medianHue, medianSaturation, medianValue);
+    return cv::Vec3b(medianBlue, medianGreen, medianRed);
 }
 
 
-cv::Mat segmentByColor(const cv::Mat& image, const cv::Vec3b& medianColorHSV, int hueThreshold, int saturationThreshold, int valueThreshold) {
-    cv::Mat hsvImage, mask;
-    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV); // Convert BGR to HSV
+void segmentByColor(const cv::Mat& inputImage, const cv::Vec3b& referenceColor, int T, cv::Mat& mask) {
+    // Iterate through each pixel of the input image
+    for (int y = 0; y < inputImage.rows; ++y) {
+        for (int x = 0; x < inputImage.cols; ++x) {
+            // Get the BGR values of the current pixel
+            cv::Vec3b pixel = inputImage.at<cv::Vec3b>(y, x);
 
-    // Create mask based on the threshold range around the median HSV color
-    cv::inRange(hsvImage,
-                cv::Scalar(medianColorHSV[0] - hueThreshold, medianColorHSV[1] - saturationThreshold, medianColorHSV[2] - valueThreshold),
-                cv::Scalar(medianColorHSV[0] + hueThreshold, medianColorHSV[1] + saturationThreshold, medianColorHSV[2] + valueThreshold),
-                mask);
-
-    // Apply morphological operations to improve shape
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
-    cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel); // Closing operation to fill gaps
-
-    return mask;
+            // Check if the absolute difference for each channel is within the threshold
+            if (std::abs(pixel[0] - referenceColor[0]) <= 2*T &&
+                std::abs(pixel[1] - referenceColor[1]) <= 2*T &&
+                std::abs(pixel[2] - referenceColor[2]) <= T) {
+                mask.at<uchar>(y, x) = 255; // White pixel
+            } else {
+                mask.at<uchar>(y, x) = 0; // Black pixel
+            }
+        }
+    }
 }
+
 
 void drawCircles(cv::Mat& image, const std::vector<cv::Vec3f>& circles) {
     for (size_t i = 0; i < circles.size(); ++i) {
@@ -97,5 +97,18 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-    return maskedImage;
+    int height = maskedImage.rows;
+    int part_height = height / 3;
+
+    cv::Mat part1 = maskedImage(cv::Rect(0, 0, image.cols, part_height));
+    cv::Mat part2 = maskedImage(cv::Rect(0, part_height, image.cols, part_height));
+    cv::Mat part3 = maskedImage(cv::Rect(0, 2 * part_height, image.cols, part_height));
+
+    cv::Vec3b median1 = computeMedianColor(part1);
+    
+    // Create a grayscale mask image
+    cv::Mat segmentedImage(part1.rows, part1.cols, CV_8UC1);
+    segmentByColor(part1, median1, 30, segmentedImage);
+
+    return segmentedImage;
 }
