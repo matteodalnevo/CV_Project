@@ -83,7 +83,8 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     std::vector<std::vector<cv::Point>> contours;
     contours.push_back(vertices);
     cv::polylines(result, contours, true, cv::Scalar(0, 255, 255), 2); // Green color with thickness 2
-    
+    //cv::imshow("Table Contours", result);
+
     // Create a mask for the ROI
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Initialize mask with zeros (black)
 
@@ -94,19 +95,5 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-    // Compute the median color
-    cv::Vec3b medianColor = computeMedianColor(maskedImage);
-
-    // Segment the image by color similar to the median color
-    int threshold = 50; // You can adjust this threshold value
-    cv::Mat segmentedImage = segmentByColor(maskedImage, medianColor, threshold);
-
-    std::vector<cv::Vec3f> circles;
-    // Apply Hough Circle Transform to find circles
-    cv::HoughCircles(segmentedImage, circles, cv::HOUGH_GRADIENT_ALT, 1, segmentedImage.rows/16, 50, 0.5, 1, 30);
-
-    // Draw the detected circles
-    drawCircles(result, circles);
-
-    return segmentedImage;
+   return maskedImage;
 }

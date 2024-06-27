@@ -65,6 +65,8 @@ int main() {
     processImages("../data/game4_clip1/frames/frame_first.png", "../data/game4_clip1/frames/frame_last.png", "game4clip1", "Game 4 Clip 1");
     processImages("../data/game4_clip2/frames/frame_first.png", "../data/game4_clip2/frames/frame_last.png", "game4clip2", "Game 4 Clip 2");
     
+    cv::waitKey(0);
+    
     return 0;
 
     /*
