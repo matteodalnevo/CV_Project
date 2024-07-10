@@ -97,18 +97,5 @@ cv::Mat ballDetection(const cv::Mat& image, std::vector<cv::Point> vertices) {
     cv::Mat maskedImage;
     image.copyTo(maskedImage, mask);
 
-    int height = maskedImage.rows;
-    int part_height = height / 3;
-
-    cv::Mat part1 = maskedImage(cv::Rect(0, 0, image.cols, part_height));
-    cv::Mat part2 = maskedImage(cv::Rect(0, part_height, image.cols, part_height));
-    cv::Mat part3 = maskedImage(cv::Rect(0, 2 * part_height, image.cols, part_height));
-
-    cv::Vec3b median1 = computeMedianColor(part1);
-    
-    // Create a grayscale mask image
-    cv::Mat segmentedImage(part1.rows, part1.cols, CV_8UC1);
-    segmentByColor(part1, median1, 30, segmentedImage);
-
     return maskedImage;
 }
