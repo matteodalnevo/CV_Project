@@ -13,7 +13,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(include)
 
 # Add executable targets
-add_executable(main src/main.cpp
+add_executable(main src/homography_main.cpp
                src/utils.cpp
                src/ballDetection.cpp
                src/tableDetection.cpp
