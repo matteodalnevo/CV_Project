@@ -344,7 +344,7 @@ void resizeAndCopyToFrame(cv::Mat& table_scheme_mod, const cv::Mat& footage_homo
 
 
 // HOMOGRAPHY_TRACK_BALLS
-std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST) {
+std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST, std::vector<cv::Point2f> footage_table_corners ) {
     
     const int left_limit = 96;
     const int right_limit = 1371;
@@ -373,12 +373,12 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
     // First frame used to find the homography
     cv::Mat footage_homography = final_video[0]; // Camera does not change   
     
-    std::string filename = TEST+"corners.txt"; // Change this to your file path
+    //std::string filename = TEST+"corners.txt"; // Change this to your file path
     // std::string filename = TEST+"corners_aaron.txt"; // Change this to your file path
-    std::vector<cv::Point2f> footage_table_corners;
+    //std::vector<cv::Point2f> footage_table_corners;
 
     // Read data from file
-    TABLEreadPointsFromFile(filename, footage_table_corners);
+    //TABLEreadPointsFromFile(filename, footage_table_corners);
 
     // Find Homography transformation
     cv::Mat Homog = best_homog(footage_table_corners,scheme_corners);

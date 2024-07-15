@@ -39,15 +39,15 @@ static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour);
  * @param lines in format of rho and theta
 
  */
-cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2);
+cv::Point2f computeIntercept (cv::Vec2f line1, cv::Vec2f line2);
 
 
 /** @brief Given the four lines for the table, compute coordinates of the four corners of the table.
 
  */
-std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert);
+std::tuple<cv::Point2f, cv::Point2f, cv::Point2f, cv::Point2f> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert);
 
-std::vector<cv::Point> tableDetection(std::vector<cv::Vec2f> lines);
+std::vector<cv::Point2f> tableDetection(std::vector<cv::Vec2f> lines);
 
 
 /** @brief Stupid check on left and right vertical lines, very hard-coded.

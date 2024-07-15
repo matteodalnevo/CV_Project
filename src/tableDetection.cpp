@@ -5,7 +5,7 @@
 
 
 // Function to show an image
-std::vector<cv::Point> tableDetection(const std::vector<cv::Vec2f> lines) {
+std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     
     std::vector<cv::Vec2f> verticalLines, horizontalLines;
     /*int lowThreshold = 40, upperThreshold = 80, blur_kernel = 3;
@@ -51,7 +51,7 @@ std::vector<cv::Point> tableDetection(const std::vector<cv::Vec2f> lines) {
     drawSingleLine(vertSx, final_edges, cv::Scalar(0, 255, 255));
     drawSingleLine(vertDx, final_edges, cv::Scalar(255, 255, 0));    */
     
-    cv::Point pt1, pt2, pt3, pt4;
+    cv::Point2f pt1, pt2, pt3, pt4;
     std::tie(pt1, pt2, pt3, pt4) = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
     //std::cout << "pt1: x = " << pt1.x << "   y = " << pt1.y << std::endl;
@@ -64,7 +64,7 @@ std::vector<cv::Point> tableDetection(const std::vector<cv::Vec2f> lines) {
     cv::circle(final_edges, pt2, 10, cv::Scalar(0, 0, 255), 5);
     cv::circle(final_edges, pt3, 10, cv::Scalar(0, 0, 255), 5);
     cv::circle(final_edges, pt4, 10, cv::Scalar(0, 0, 255), 5); */
-    std::vector<cv::Point> vertices = {pt1, pt2, pt3, pt4};
+    std::vector<cv::Point2f> vertices = {pt1, pt2, pt3, pt4};
 
     std::cout << "PT1: x = " << pt1.x << "  y = " << pt1.y << std::endl;
     std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
@@ -135,7 +135,7 @@ static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colo
         float slope = -cos(theta)/sin(theta), intercept = rho / sin(theta);
         //std::cout << "Rho: " << rho << "        Theta: " << theta << std::endl;
         //std::cout << "Slope: " << slope << "        Intercept: " << intercept << std::endl;
-        cv::Point pt1, pt2;
+        cv::Point2f pt1, pt2;
         double a = cos(theta), b = sin(theta);
         double x0 = a*rho, y0 = b*rho;
         pt1.x = cvRound(x0 + 1000*(-b));
@@ -155,7 +155,7 @@ static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour){
     float slope = -cos(theta)/sin(theta), intercept = rho / sin(theta);
     //std::cout << "Rho: " << rho << "        Theta: " << theta_deg << std::endl;
     //std::cout << "Slope: " << slope << "        Intercept: " << intercept << std::endl;
-    cv::Point pt1, pt2;
+    cv::Point2f pt1, pt2;
     double a = cos(theta), b = sin(theta);
     double x0 = a*rho, y0 = b*rho;
     pt1.x = cvRound(x0 + 1000*(-b));
@@ -312,7 +312,7 @@ static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right) {
     }
 }
 
-cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
+cv::Point2f computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
     //compute slope and intercept from rho, theta
     float m1 = 0, m2 = 0, q1 = 0, q2 = 0;
     m1 = -(cos(line1[1]) / sin(line1[1]));
@@ -325,7 +325,7 @@ cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
         float x = cvRound(line1[0]);
         float y = cvRound(m2 * x + q2);
 
-        return cv::Point(x, y); 
+        return cv::Point2f(x, y); 
     }
 
     //std::cout << "m1: " << m1 << "  q1: " << q1 << std::endl;
@@ -337,12 +337,12 @@ cv::Point computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
 
     //std::cout << "Intercept x: " << x << "       y: " << y << std::endl;
 
-    return cv::Point(x, y);
+    return cv::Point2f(x, y);
 }
 
-std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert) {
+std::tuple<cv::Point2f, cv::Point2f, cv::Point2f, cv::Point2f> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert) {
     //Compute intercept coordinates
-    cv::Point pt1, pt2, pt3, pt4;
+    cv::Point2f pt1, pt2, pt3, pt4;
     pt1 = computeIntercept(leftVert, topHoriz);         //top left
     pt2 = computeIntercept(rightVert, topHoriz);       //top right
     pt3 = computeIntercept(rightVert, lowHoriz);       //bottom right
@@ -353,7 +353,7 @@ std::tuple<cv::Point, cv::Point, cv::Point, cv::Point> computeCorners(cv::Vec2f 
     //std::cout << "Pt3 x: " << pt3.x << "       y: " << pt3.y << std::endl;
     //std::cout << "Pt4 x: " << pt4.x << "       y: " << pt4.y << std::endl;
 
-    return std::make_tuple(pt1, pt2, pt3, pt4); //from top-left in clockwise order
+    return std::make_tuple(pt1,pt4,pt3, pt2); //from top-left in counterclockwise order
 }
 
 cv::Mat computeMask(cv::Mat image) {

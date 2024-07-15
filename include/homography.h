@@ -219,7 +219,7 @@ void resizeAndCopyToFrame(cv::Mat& table_scheme_mod,
  * @param TEST String representing the test case identifier or file path base.
  * @return A vector of Mat objects representing the modified video frames with drawn trajectories.
  */
-std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST);                   
+std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST, std::vector<cv::Point2f> footage_table_corners);                   
                    
                    
 #endif // HOMOGRAPHY_H
