@@ -16,6 +16,7 @@ include_directories(include)
 add_executable(main src/homography_main.cpp
                src/utils.cpp
                src/ballDetection.cpp
+               src/ballClassification.cpp
                src/tableDetection.cpp
                src/homography.cpp
                src/preProcess.cpp)
