@@ -94,10 +94,10 @@ cv::Rect mergeBoundingBoxes(const cv::Rect& r1, const cv::Rect& r2);
 void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, int& pixeldistance, float& dimdifference, float& sharedarea);
 
 //hand detection
-void HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand);
+cv::Mat HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand);
 
 // Overall function
-std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon);
+std::tuple<std::vector<cv::Rect>, cv::Mat> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon);
 
 
 #endif // BALLDETECTION_H

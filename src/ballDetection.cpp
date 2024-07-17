@@ -413,10 +413,11 @@ void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, int& pixeldistance
 }
 
 // Hand mask
-void HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand) {
+/*
+cv::Mat HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand) {
     if (image.empty()) {
         std::cerr << "Could not open or find the image." << std::endl;
-        return;
+        return image;
     }
 
     // Convert the image to HSV color space
@@ -494,18 +495,91 @@ void HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::
         return false;
     }), bbox.end());
 
-    // Display the original image and the final colored output
-    // cv::imshow("Original Image", image);
-    // cv::imshow("Colored Output", whiteBackground);
+    return whiteBackground;
+}
+*/
+// Hand mask
+cv::Mat HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand) {
+    if (image.empty()) {
+        std::cerr << "Could not open or find the image." << std::endl;
+        return cv::Mat();
+    }
 
-    // Wait for a key press indefinitely
-    // cv::waitKey(0);
+    // Convert the image to HSV color space
+    cv::Mat hsvImage;
+    cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
+
+    // Split the HSV image into its components
+    std::vector<cv::Mat> hsvChannels;
+    cv::split(hsvImage, hsvChannels);
+
+    // Get the saturation channel
+    cv::Mat saturation = hsvChannels[1];
+    cv::GaussianBlur(saturation, saturation, cv::Size(3, 3), 1.5, 1.5);
+
+    // Apply a threshold to the saturation channel to create a mask
+    cv::Mat mask;
+    cv::threshold(saturation, mask, threshold_hand, 255, cv::THRESH_BINARY);
+
+    // Create a mask of the same size as the input image initialized to zero
+    cv::Mat maskROI = cv::Mat::zeros(mask.size(), mask.type());
+
+    // Convert areaOfInterest from Point2f to Point (integer coordinates)
+    std::vector<cv::Point> points;
+    for (const auto& point : areaOfInterest) {
+        points.push_back(cv::Point(static_cast<int>(point.x), static_cast<int>(point.y)));
+    }
+
+    // Fill the area of interest polygon in the mask with white (255)
+    std::vector<std::vector<cv::Point>> pts = { points };
+    cv::fillPoly(maskROI, pts, cv::Scalar(255));
+
+    // Apply the polygon mask to the original mask
+    cv::Mat finalMask;
+    cv::bitwise_and(mask, maskROI, finalMask);
+
+    // Create an output image initialized to black
+    cv::Mat outputImage = cv::Mat::zeros(image.size(), image.type());
+
+    // Find contours in the final mask
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(finalMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // Color the contours
+    for (size_t i = 0; i < contours.size(); ++i) {
+        cv::drawContours(outputImage, contours, static_cast<int>(i), cv::Scalar(255, 255, 255), -1);
+    }
+
+    // Create a mask of the polygon areaOfInterest
+    cv::Mat polygonMask = cv::Mat::zeros(image.size(), CV_8UC1);
+    cv::fillPoly(polygonMask, pts, cv::Scalar(255));
+
+    // Set everything outside the polygon to white in the output image
+    cv::Mat whiteBackground(image.size(), image.type(), cv::Scalar(255, 255, 255));
+    outputImage.copyTo(whiteBackground, polygonMask);
+
+    // Remove bounding boxes that intersect with the black area of the whiteBackground
+    bbox.erase(std::remove_if(bbox.begin(), bbox.end(), [&whiteBackground](const cv::Rect& box) {
+        for (int y = box.y; y < box.y + box.height; ++y) {
+            for (int x = box.x; x < box.x + box.width; ++x) {
+                if (x >= 0 && y >= 0 && x < whiteBackground.cols && y < whiteBackground.rows) {
+                    cv::Vec3b color = whiteBackground.at<cv::Vec3b>(y, x);
+                    if (color == cv::Vec3b(0, 0, 0)) {
+                        return true; // Found a black pixel in the bounding box
+                    }
+                }
+            }
+        }
+        return false;
+    }), bbox.end());
+
+    return whiteBackground;
 }
 
 
 
 // Overall function
-std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon) {
+std::tuple<std::vector<cv::Rect>, cv::Mat> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon) {
 
     std::vector<cv::Point2f> scheme_corners = {cv::Point2f(82, 81), cv::Point2f(82, 756), cv::Point2f(1384, 756), cv::Point2f(1384, 81)}; // 3,4
     std::vector<cv::Point2f> smaller_corners = {cv::Point2f(94, 104), cv::Point2f(94, 733), cv::Point2f(1365, 733), cv::Point2f(1365, 104)};
@@ -647,7 +721,8 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
 
     // Hand mask
     int threshold_hand = 100;
-    HandMask(filteredBboxes, displayImage, smaller_corners_footage , threshold_hand);
+
+    cv::Mat hand = HandMask(filteredBboxes, displayImage, smaller_corners_footage , threshold_hand);
     
     // Draw both detected and correct bounding boxes
     drawBoundingBoxes(displayImage, filteredBboxes);
@@ -656,8 +731,8 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
 
     cv::imshow("Hough Circles", displayImage);
-    cv::waitKey(0);
-    cv::destroyAllWindows();
+    //cv::waitKey(0);
+    //cv::destroyAllWindows();
 
-    return filteredBboxes;
+    return std::make_tuple(filteredBboxes, hand);
 }
