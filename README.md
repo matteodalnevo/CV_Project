@@ -17,12 +17,14 @@ In more detail, for each frame of the input video the system to be developed sho
 | Matteo   |    03    | Set up for the project / import the dataset                          |
 |          |    02    | Planning                                                             |
 |          |    02    | Set Up                                                               |
-|          |    00    |                                                                      |
-|  Marco   |    02    | Planning                                                             |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|  Aaron   |    02    | Planning                                                             |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
-|          |    00    |                                                                      |
+|          |   01:30  | Hough Cirlce and bounding boxes                                      |
+|          |    02    | Discussions with the prof and creation of the ROI                    |
+|          |    04    | Haar study                                                           |
+|          |    03    | Call                                                                 |
+|          |    02    | TEST HOUGH                                                           |
+|          |    04    | kmeans + tresholding                                                 |
+|          |
+|          |
+|          |
+|          |
+|          |

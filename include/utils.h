@@ -8,7 +8,8 @@
 #include <string>
 
 struct BoundingBox {
-    int x, y, width, height, ID;
+    cv::Rect box;
+    int ID;
 };
 
 // Function to display an image in a window

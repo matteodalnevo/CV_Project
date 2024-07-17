@@ -13,7 +13,8 @@ void showImage(const cv::Mat& image, const std::string& windowName) {
     cv::imshow(windowName, image);
 
     // Wait for any keystroke in the window
-    cv::waitKey(0);
+    // cv::waitKey(0);
+    // cv::destroyAllWindows();
 }
 
 // Function to read bounding boxes from a file
@@ -29,7 +30,7 @@ bool readBoundingBoxes(const std::string& filePath, std::vector<BoundingBox>& bo
     while (getline(inputFile, line)) {
         std::istringstream iss(line);
         BoundingBox bbox;
-        if (!(iss >> bbox.x >> bbox.y >> bbox.width >> bbox.height >> bbox.ID)) {
+        if (!(iss >> bbox.box.x >> bbox.box.y >> bbox.box.width >> bbox.box.height >> bbox.ID)) {
             std::cerr << "Error parsing line: " << line << std::endl;
             continue;
         }
