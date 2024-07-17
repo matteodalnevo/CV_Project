@@ -258,7 +258,7 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
         for (auto& bbox : Bbox_rect) {
             BoundingBox temp;
             temp.box = bbox;
-            temp.ID = -1;
+            temp.ID = 2;
             Bbox.push_back(temp);
         }
 
@@ -311,7 +311,7 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
                 points.push_back(variance);
             }
             
-            std::cout << "percentage: " << whitePixelPercentage << "  " << blackPixelPercentage << "  " << variance << "  " << bbox.ID << std::endl;
+            // std::cout << "percentage: " << whitePixelPercentage << "  " << blackPixelPercentage << "  " << variance << "  " << bbox.ID << std::endl;
 
             // classifyOtherBall(image, bbox, whitePixelPercentage, variance);
 

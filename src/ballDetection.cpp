@@ -9,6 +9,79 @@
 #include <numeric>
 #include <cmath>
 
+// Compute the median
+cv::Vec3b MedianColor(const cv::Mat& image) {
+    std::vector<uchar> blue, green, red;
+
+    // Extract pixel values for each channel, excluding black pixels ([0, 0, 0])
+    for (int row = 0; row < image.rows; ++row) {
+        for (int col = 0; col < image.cols; ++col) {
+            cv::Vec3b bgr = image.at<cv::Vec3b>(row, col);
+            if (bgr != cv::Vec3b(0, 0, 0)) { // Skip black pixels
+                blue.push_back(bgr[0]);
+                green.push_back(bgr[1]);
+                red.push_back(bgr[2]);
+            }
+        }
+    }
+
+    // Function to find median of a vector
+    auto findMedian = [](std::vector<uchar>& channel) -> uchar {
+        size_t n = channel.size();
+        std::sort(channel.begin(), channel.end());
+        if (n % 2 == 0) {
+            return (channel[n / 2 - 1] + channel[n / 2]) / 2;
+        } else {
+            return channel[n / 2];
+        }
+    };
+
+    // Compute the median for each channel
+    uchar medianBlue = findMedian(blue);
+    uchar medianGreen = findMedian(green);
+    uchar medianRed = findMedian(red);
+
+    return cv::Vec3b(medianBlue, medianGreen, medianRed);
+}
+
+// Find the color of the table
+cv::Vec3b table(const cv::Mat& image, std::vector<cv::Point2f> vertices) {
+
+    // Make a copy of the input image to draw the rectangle on
+    cv::Mat result = image.clone();
+    
+    std::vector<cv::Point> points;
+    for (const auto& vertex : vertices) {
+        points.push_back(cv::Point(static_cast<int>(vertex.x), static_cast<int>(vertex.y)));
+    }
+
+    // Draw the quadrilateral by connecting the vertices
+    std::vector<std::vector<cv::Point>> contours;
+    contours.push_back(points);
+    cv::polylines(result, contours, true, cv::Scalar(0, 255, 255), 2); // Yellow color with thickness 2
+
+    //cv::imshow("Table Contours", result);
+
+    // CUT THE ORIGINAL IMAGE
+
+    // Create a mask for the ROI
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Initialize mask with zeros (black)
+
+    // Fill the ROI (region of interest) defined by the vertices with white color (255)
+    cv::fillPoly(mask, contours, cv::Scalar(255));
+
+    // Create a masked image using the original image and the mask
+    cv::Mat maskedImage;
+    image.copyTo(maskedImage, mask);
+    
+    
+    cv::Vec3b tableColor = MedianColor(maskedImage);
+    
+    //std::cout << "BGR: " << tableColor[0] << " " << tableColor[1] << " " << tableColor[2] << " " << std::endl;
+    
+    return tableColor;
+}
+
 // Print the bounding boxes
 void printBoundingBoxes(const std::vector<cv::Rect>& filteredBboxes) {
     for (std::vector<cv::Rect>::const_iterator it = filteredBboxes.begin(); it != filteredBboxes.end(); ++it) {
@@ -249,36 +322,29 @@ bool isColorClose(const cv::Vec3f& color1, const cv::Vec3f& color2, float margin
 }
 
 // Check on the false positives, derived from the color matching 
-bool isFalsePositive(const cv::Mat& image, const cv::Rect& bbox, const ColorMean& means, float threshold, float margin) {
+bool isFalsePositive(const cv::Mat& image, const cv::Rect& bbox, const cv::Vec3b& mean, float threshold, float margin) {
     cv::Mat roi = image(bbox);
     int totalPixels = roi.rows * roi.cols;
-
-    std::vector<cv::Vec3f> meanColors = {means.blue1, means.blue2, means.blue3, means.grey, means.green, means.pink1, means.pink2, means.brown};
-    for (const auto& meanColor : meanColors) {
-        int closePixels = 0;
-        for (int y = 0; y < roi.rows; ++y) {
-            for (int x = 0; x < roi.cols; ++x) {
-                cv::Vec3b pixel = roi.at<cv::Vec3b>(y, x);
-                cv::Vec3f pixelF = {static_cast<float>(pixel[0]), static_cast<float>(pixel[1]), static_cast<float>(pixel[2])};
-
-                // Check if the pixel is close to one of the mean colors
-                if (isColorClose(pixelF, meanColor, margin)) {
-                    ++closePixels;
-                }
+    int closePixels = 0;
+    for (int y = 0; y < roi.rows; ++y) {
+        for (int x = 0; x < roi.cols; ++x) {
+            cv::Vec3b pixel = roi.at<cv::Vec3b>(y, x);
+            // Check if the pixel is close to the mean color
+            if (isColorClose(cv::Vec3f(pixel[0], pixel[1], pixel[2]), cv::Vec3f(mean[0], mean[1], mean[2]), margin)) {
+                ++closePixels;
             }
         }
-        if (static_cast<float>(closePixels) / totalPixels > threshold) {
-            return true;
-        }
     }
-    return false;
+    return static_cast<float>(closePixels) / totalPixels > threshold;
 }
 
 // Filtered based on color 
-std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const ColorMean& means, float threshold, float margin) {
+std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const std::vector<cv::Point2f>& vertices, float threshold, float margin) {
     std::vector<cv::Rect> filteredBboxes;
+    cv::Vec3b mean = table(image, vertices);
+
     for (const auto& bbox : bboxes) {
-        if (!isFalsePositive(image, bbox, means, threshold, margin)) {
+        if (!isFalsePositive(image, bbox, mean, threshold, margin)) {
             filteredBboxes.push_back(bbox);
         }
     }
@@ -442,7 +508,6 @@ void HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::
 std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon) {
 
     std::vector<cv::Point2f> scheme_corners = {cv::Point2f(82, 81), cv::Point2f(82, 756), cv::Point2f(1384, 756), cv::Point2f(1384, 81)}; // 3,4
-    //std::vector<cv::Point2f> smaller_corners = {cv::Point2f(94, 100), cv::Point2f(94, 737), cv::Point2f(1365, 737), cv::Point2f(1365, 100)};
     std::vector<cv::Point2f> smaller_corners = {cv::Point2f(94, 104), cv::Point2f(94, 733), cv::Point2f(1365, 733), cv::Point2f(1365, 104)};
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -469,8 +534,8 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     ; //0.5 // 0.6%
 
     // Color check false positive
-    float pixelsofcolor = 0.10;
-    int margincolor = 7;//10
+    float pixelsofcolor = 0.40;
+    int margincolor = 25;//10;//10
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -491,7 +556,8 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     cv::Mat H_inv;
     cv::invert(H, H_inv);
     
-    std::vector<cv::Point2f> scheme_holes = {cv::Point2f(94, 100), cv::Point2f(94, 737), cv::Point2f(1365, 737), cv::Point2f(1365, 100), cv::Point2f(730, 100), cv::Point2f(730, 737) };
+    //std::vector<cv::Point2f> smaller_corners = {cv::Point2f(94, 106), cv::Point2f(94, 733), cv::Point2f(1365, 733), cv::Point2f(1365, 106)};
+    std::vector<cv::Point2f> scheme_holes = {cv::Point2f(94, 100), cv::Point2f(94, 737), cv::Point2f(1365, 737), cv::Point2f(1365, 100),   cv::Point2f(730, 100), cv::Point2f(730, 737) };
         
 
     std::vector<cv::Point2f> footage_holes, smaller_corners_footage;
@@ -574,20 +640,22 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     mergeBoundingBoxes(detectedBoundingBoxes, pxeldistance, dimdifference, sharedarea);
 
     // REMOVE FALSE POSITIVES
-    ColorMean means;
-    std::vector<cv::Rect> filteredBboxes = filterBoundingBoxes(displayImage, detectedBoundingBoxes, means, pixelsofcolor, margincolor);
+    //ColorMean means;
+
+    //std::vector<cv::Rect> filteredBboxes = detectedBoundingBoxes;
+    std::vector<cv::Rect> filteredBboxes = filterBoundingBoxes(displayImage, detectedBoundingBoxes,smaller_corners_footage, pixelsofcolor, margincolor);
 
     // Hand mask
     int threshold_hand = 100;
     HandMask(filteredBboxes, displayImage, smaller_corners_footage , threshold_hand);
     
     // Draw both detected and correct bounding boxes
-    drawBoundingBoxes(out, filteredBboxes);
+    drawBoundingBoxes(displayImage, filteredBboxes);
     
     // Draw the polygon on the image
-    // drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
+    drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
 
-    cv::imshow("Hough Circles", out);
+    cv::imshow("Hough Circles", displayImage);
     cv::waitKey(0);
     cv::destroyAllWindows();
 

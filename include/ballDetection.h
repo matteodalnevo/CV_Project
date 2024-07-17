@@ -13,6 +13,13 @@
 #include <cmath>
 
 
+// Compute the median
+cv::Vec3b MedianColor(const cv::Mat& image);
+
+// Find the color of the table
+cv::Vec3b table(const cv::Mat& image, std::vector<cv::Point2f> vertices);
+
+
 // Print the bounding boxes
 void printBoundingBoxes(const std::vector<cv::Rect>& filteredBboxes);
 
@@ -69,10 +76,10 @@ struct ColorMean {
 bool isColorClose(const cv::Vec3f& color1, const cv::Vec3f& color2, float margin);
 
 // Check on the false positives, derived from the color matching 
-bool isFalsePositive(const cv::Mat& image, const cv::Rect& bbox, const ColorMean& means, float threshold, float margin);
+bool isFalsePositive(const cv::Mat& image, const cv::Rect& bbox, const cv::Vec3b& mean, float threshold, float margin);
 
 // Filtered based on color 
-std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const ColorMean& means, float threshold, float margin);
+std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const std::vector<cv::Point2f>& vertices, float threshold, float margin);
 
 // Distance between bounding boxes
 double calculateDistance(cv::Point2f p1, cv::Point2f p2);
