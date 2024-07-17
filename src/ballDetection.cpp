@@ -346,8 +346,8 @@ void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, int& pixeldistance
     
 }
 
-
-void HandMask(const std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand) {
+// Hand mask
+void HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand) {
     if (image.empty()) {
         std::cerr << "Could not open or find the image." << std::endl;
         return;
@@ -399,19 +399,43 @@ void HandMask(const std::vector<cv::Rect>& bbox, cv::Mat image, const std::vecto
     // Color connected components with pixel (0, 0) with red
     for (size_t i = 0; i < contours.size(); ++i) {
         if (pixelInMask && cv::pointPolygonTest(contours[i], cv::Point(0, 0), false) >= 0) {
-            cv::drawContours(outputImage, contours, static_cast<int>(i), cv::Scalar(0, 0, 255), -1);
+            //cv::drawContours(outputImage, contours, static_cast<int>(i), cv::Scalar(0, 0, 255), -1);
         } else {
             cv::drawContours(outputImage, contours, static_cast<int>(i), cv::Scalar(255, 255, 255), -1);
         }
     }
 
+    // Create a mask of the polygon areaOfInterest
+    cv::Mat polygonMask = cv::Mat::zeros(image.size(), CV_8UC1);
+    cv::fillPoly(polygonMask, pts, cv::Scalar(255));
+
+    // Set everything outside the polygon to white in the output image
+    cv::Mat whiteBackground(image.size(), image.type(), cv::Scalar(255, 255, 255));
+    outputImage.copyTo(whiteBackground, polygonMask);
+
+    // Remove bounding boxes that intersect with the black area of the whiteBackground
+    bbox.erase(std::remove_if(bbox.begin(), bbox.end(), [&whiteBackground](const cv::Rect& box) {
+        for (int y = box.y; y < box.y + box.height; ++y) {
+            for (int x = box.x; x < box.x + box.width; ++x) {
+                if (x >= 0 && y >= 0 && x < whiteBackground.cols && y < whiteBackground.rows) {
+                    cv::Vec3b color = whiteBackground.at<cv::Vec3b>(y, x);
+                    if (color == cv::Vec3b(0, 0, 0)) {
+                        return true; // Found a black pixel in the bounding box
+                    }
+                }
+            }
+        }
+        return false;
+    }), bbox.end());
+
     // Display the original image and the final colored output
-    //cv::imshow("Original Image", image);
-    cv::imshow("Colored Output", outputImage);
+    // cv::imshow("Original Image", image);
+    // cv::imshow("Colored Output", whiteBackground);
 
     // Wait for a key press indefinitely
-    cv::waitKey(0);
+    // cv::waitKey(0);
 }
+
 
 
 // Overall function
@@ -451,6 +475,7 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     cv::Mat image = img.clone();
+    cv::Mat out = img.clone();
 
     if (image.empty()) {
         std::cerr << "Could not open or find the image!\n";
@@ -553,16 +578,16 @@ std::vector<cv::Rect> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polyg
     std::vector<cv::Rect> filteredBboxes = filterBoundingBoxes(displayImage, detectedBoundingBoxes, means, pixelsofcolor, margincolor);
 
     // Hand mask
-    int threshold_hand = 140;
+    int threshold_hand = 100;
     HandMask(filteredBboxes, displayImage, smaller_corners_footage , threshold_hand);
     
     // Draw both detected and correct bounding boxes
-    drawBoundingBoxes(displayImage, filteredBboxes);
+    drawBoundingBoxes(out, filteredBboxes);
     
     // Draw the polygon on the image
-    drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
+    // drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
 
-    cv::imshow("Hough Circles", displayImage);
+    cv::imshow("Hough Circles", out);
     cv::waitKey(0);
     cv::destroyAllWindows();
 
