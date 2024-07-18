@@ -163,7 +163,10 @@ int main() {
     for (int i = 0; i < imagePaths.size(); ++i) {
 
         // Here we have the conversion into frames FRAMES ORIGINAL
-        auto [frames, fps] = videoToFrames(imagePaths[i]);
+        std::vector<cv::Mat> frames;
+        double fps;
+        std::tie(frames, fps) = videoToFrames(imagePaths[i]);
+
         // PreProcessing Corners
         cv::Mat result_first;
         std::vector<cv::Vec2f> first_detected_lines;
@@ -176,12 +179,14 @@ int main() {
         // Color Table
         cv::Vec3b tableColor = ROItable(frames.front(), footage_corners);
 
-        // Balls Detection
-        //std::vector<cv::Rect> bboxes_first;
-        //std::vector<cv::Rect> bboxes_last;
+        std::vector<cv::Rect> bboxes_first;
+        std::vector<cv::Rect> bboxes_last;
 
-        auto [bboxes_first, hand_first] = ballsDetection(frames.front(), footage_corners);
-        auto [bboxes_last, hand_last] = ballsDetection(frames.back(), footage_corners);
+        cv::Mat hand_first;
+        cv::Mat hand_last;
+        
+        std::tie(bboxes_first, hand_first) = ballsDetection(frames.front(), footage_corners);
+        std::tie(bboxes_last, hand_last) = ballsDetection(frames.back(), footage_corners);
 
         std::vector<BoundingBox> classified_boxes_first;
         std::vector<BoundingBox> classified_boxes_last;
@@ -201,13 +206,20 @@ int main() {
         cv::imshow("segmentation_last", last_col);
 
         cv::waitKey(0);
+
+        std::vector<cv::Mat> video_frames = homography_track_balls(frames,footage_corners,classified_boxes_first, classified_boxes_last);
+        
+        std::cout<<"\nVideo Creation"<<std::endl;
+        framesToVideo(video_frames, "Result_"+std::to_string(i)+".mp4", fps); // TO BE USED ON TRACK OUT
+
+        cv::waitKey(0);
         cv::destroyAllWindows();
 
     }
 
-    // std::vector<cv::Mat> video_frames = homography_track_balls(frames,TEST,footage_corners);
+    // 
 
-    // framesToVideo(video_frames, "MOD_"+VIDEO, fps); // TO BE USED ON TRACK OUT
+    // 
 
     return 0;
 }

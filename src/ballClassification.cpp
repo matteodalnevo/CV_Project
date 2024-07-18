@@ -306,15 +306,15 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
 		    shift = -3; // 3
         	    adjustBoundingBox(bbox, shift);
 		    
-		    std::cout << "White %: " << whitePixelPercentage << " " << "ID: " << bbox.ID << std::endl;
+		    //std::cout << "White %: " << whitePixelPercentage << " " << "ID: " << bbox.ID << std::endl;
 	    }
         }
         
         
-        for (auto& bbox : Bbox) {
-        	// Plot the Classified Bounding Box
-        	plotBBox(image, bbox);
-        }
+        //for (auto& bbox : Bbox) {
+        //	// Plot the Classified Bounding Box
+        //	plotBBox(image, bbox);
+        //}
         
         std::cout << std::endl;
         

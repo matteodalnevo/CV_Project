@@ -1,24 +1,15 @@
 #include "homography.h"
+#include "utils.h"
 
 
 // BALL_READ_DATA_FROM_FILE
-void BALLreadDataFromFile(const std::string& filename, std::vector<cv::Rect>& balls_footage, std::vector<int>& color) {
-    std::ifstream infile(filename);
-    if (!infile.is_open()) {
-        std::cerr << "Error opening file " << filename << std::endl;
-        return;
-    }
-
-    int x, y, width, height, color_code;
-    while (infile >> x >> y >> width >> height >> color_code) {
-        cv::Rect rect(x-15, y-15, width+30, height+30);
+void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vector<cv::Rect>& balls_footage, std::vector<int>& color) {
+    for ( int i = 0; i < classified_boxes.size(); ++i){
+        cv::Rect rect(classified_boxes[i].box.x-15, classified_boxes[i].box.y-15, classified_boxes[i].box.width+30, classified_boxes[i].box.height+30);
         balls_footage.push_back(rect);
-        color.push_back(color_code);
+        color.push_back(classified_boxes[i].ID);
     }
-
-    infile.close();
 }
-
 
 
 
@@ -38,7 +29,6 @@ void TABLEreadPointsFromFile(const std::string& filename, std::vector<cv::Point2
 
     infile.close();
 }
-
 
 
 
@@ -193,7 +183,6 @@ void drawTrajectory(cv::Mat& image, const std::vector<cv::Point2f>& trajectory, 
 
 
 
-
 // DRAW_MOVING_BALL
 void drawMovingBall(cv::Mat& image, const std::vector<std::vector<cv::Point2f>>& trajectories_scheme, const std::vector<int>& color, int i, int j) {
 	
@@ -279,8 +268,8 @@ void HSV_preprocessing(const std::vector<cv::Mat>& video_frames, std::vector<cv:
 
 
 
-// CLASSIFY_BALLS
-void classifyBalls(const std::vector<cv::Rect>& balls_footage_first,
+// IDENTIFY_MOVED_BALLS
+void identifyMovedBalls(const std::vector<cv::Rect>& balls_footage_first,
                           const std::vector<cv::Rect>& balls_footage_last,
                           const std::vector<int>& color_first,
                           std::vector<cv::Rect>& balls_just_draw,
@@ -288,13 +277,19 @@ void classifyBalls(const std::vector<cv::Rect>& balls_footage_first,
                           std::vector<cv::Point2f>& centers_just_draw,
                           std::vector<cv::Rect>& balls_footage,
                           std::vector<int>& color) {
+    
+    // Value that will be provided to the check_moved_balls function to check if there are difference between firs and last frame
+    int tollerance_of_motion = 5; 
+    
     // Take all the bounding information about the balls in the first frame and check if appear also in the last frame, classify them into moved and not moved (normal or just draw) 
-    for (size_t i = 0; i < balls_footage_first.size(); ++i) {
+    for (int i = 0; i < balls_footage_first.size(); ++i) {
+
         const cv::Rect& rect_first = balls_footage_first[i];
         bool found = false;
 
         for (const auto& rect_last : balls_footage_last) {
-            if (!check_moved_balls(rect_first, rect_last)) {
+            if (!check_moved_balls(rect_first, rect_last, tollerance_of_motion)) { // Function that check the bounding box between the frame first and last
+                
                 found = true;
                 balls_just_draw.push_back(rect_first);
 
@@ -302,8 +297,10 @@ void classifyBalls(const std::vector<cv::Rect>& balls_footage_first,
                 size_t index = i;
                 color_just_draw.push_back(color_first[index]);
 
+                // Not moved balls
                 cv::Point2f center(rect_first.x + rect_first.width / 2, rect_first.y + rect_first.height / 2);
                 centers_just_draw.push_back(center);
+
                 break;
             }
         }
@@ -311,7 +308,8 @@ void classifyBalls(const std::vector<cv::Rect>& balls_footage_first,
         if (!found) {
             balls_footage.push_back(rect_first);
 
-            // Find the corresponding color and push to color
+            // Find the corresponding color and push to colo
+
             size_t index = i;
             color.push_back(color_first[index]);
         }
@@ -343,51 +341,47 @@ void resizeAndCopyToFrame(cv::Mat& table_scheme_mod, const cv::Mat& footage_homo
 
 
 
-// HOMOGRAPHY_TRACK_BALLS
-std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST, std::vector<cv::Point2f> footage_table_corners ) {
+// HOMOGRAPHY_TRACK_BALLS MAIN FUNCTION 
+std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::vector<cv::Point2f> footage_table_corners, std::vector<BoundingBox> classified_boxes_first, std::vector<BoundingBox> classified_boxes_last ) {
     
-    const int left_limit = 96;
-    const int right_limit = 1371;
-    const int bottom_limit = 743;
-    const int upper_limit = 94;
+    // Constant Parameter identifying the coordinate of the playable field in the scheme image
+    const int left_limit = 96; // left limit x coordinate
+    const int right_limit = 1371; // right limit x coordinate
+    const int bottom_limit = 743; // bottom limit y coordinate
+    const int upper_limit = 94; // upper limit y coordinate
     
+    // Copy of the video frames
     std::vector<cv::Mat> cloned_video_frames;
     cloned_video_frames.reserve(video_frames.size());
-
     for (const auto& frame : video_frames) {
         cloned_video_frames.push_back(frame.clone());
     }
 
-     
+    // Modified copy of the video, each frames it is preprocessed by the function HSV_preprocessing the value componente it is doubled
     std::vector<cv::Mat> final_video;
     final_video.reserve(video_frames.size());
-
     HSV_preprocessing(video_frames, final_video);  
 
 
     // HOMOGRAPHY PART
+
+    // The scheme of the table is loaded from the following path
     cv::Mat const table_scheme = cv::imread("../data/eight_ball_table/Table.jpg"); // Scheme of the table
-    std::vector<cv::Point2f>  scheme_corners = {cv::Point2f(82, 81), cv::Point2f(82, 756),      // 1,2
-                                                     cv::Point2f(1384, 756), cv::Point2f(1384, 81)}; // 3,4
+
+    // The corners of the image scheme that identify the corner of the green or blue area of the field  
+    const  std::vector<cv::Point2f>  scheme_corners = {cv::Point2f(82, 81), cv::Point2f(82, 756),cv::Point2f(1384, 756), cv::Point2f(1384, 81)};
 
     // First frame used to find the homography
     cv::Mat footage_homography = final_video[0]; // Camera does not change   
-    
-    //std::string filename = TEST+"corners.txt"; // Change this to your file path
-    // std::string filename = TEST+"corners_aaron.txt"; // Change this to your file path
-    //std::vector<cv::Point2f> footage_table_corners;
-
-    // Read data from file
-    //TABLEreadPointsFromFile(filename, footage_table_corners);
 
     // Find Homography transformation
-    cv::Mat Homog = best_homog(footage_table_corners,scheme_corners);
+    cv::Mat Homog = best_homog(footage_table_corners,scheme_corners); // This function provide the best homography matrix w.r.t. the four possible rotation of the corners
     std::cout<<"\nThe best Homography matrix found is: \n"<<std::endl;
     std::cout<<Homog<<std::endl;
 
     // TRACKING
-    std::string BALLfilename_first  = TEST+"bounding_boxes/frame_first_bbox.txt";
-    std::string BALLfilename_last  = TEST+"bounding_boxes/frame_last_bbox.txt";
+    //std::string BALLfilename_first  = TEST+"bounding_boxes/frame_first_bbox.txt";
+    //std::string BALLfilename_last  = TEST+"bounding_boxes/frame_last_bbox.txt";
     std::vector<cv::Rect> balls_footage_first;
     std::vector<cv::Rect> balls_footage_last;
     std::vector<cv::Rect> balls_footage;
@@ -400,10 +394,10 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
     std::vector<cv::Point2f> centers_just_draw; 
 
     // Read data from file
-    BALLreadDataFromFile(BALLfilename_first, balls_footage_first, color_first);
-    BALLreadDataFromFile(BALLfilename_last, balls_footage_last, color_last);
+    BALLreadDataFromInput(classified_boxes_first, balls_footage_first, color_first);
+    BALLreadDataFromInput(classified_boxes_last, balls_footage_last, color_last);
 
-    classifyBalls(balls_footage_first, balls_footage_last, color_first, balls_just_draw,
+    identifyMovedBalls(balls_footage_first, balls_footage_last, color_first, balls_just_draw,
                          color_just_draw, centers_just_draw, balls_footage, color);
 
 
@@ -422,6 +416,8 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
 
 
     std::vector<bool> ball_in(balls_footage.size(), false);
+
+    std::cout<<"\nStart Tracking the balls along the video"<<std::endl;
 
     for (int j = 0; j < final_video.size(); ++j) {
         cv::Mat table_scheme_mod = table_scheme.clone();
@@ -444,7 +440,7 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
                         std::cout << "\nDuring the video one ball went into the pocket." << std::endl;
                     }
                 } else {
-                    std::cerr << "Tracking failure in frame " << i << "  " << j << std::endl;
+                    std::cerr << "\nTracking failure in frame " << i << "  " << j << std::endl;
                 }
             }
 

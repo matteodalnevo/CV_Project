@@ -12,19 +12,18 @@
 #include <tuple>
 #include <fstream>
 #include <sstream>
+#include "utils.h"
 
 
-// BALL_READ_DATA_FROM_FILE (used during tests)
+// BALL_READ_DATA_FROM_INPUT 
 /**
  * @brief Reads ball data from a file and stores it in the provided vectors.
  *
- * @param filename Const reference to a string representing the name of the file to read from.
+ * @param classified_boxes vector of bounding boxes
  * @param balls_footage Reference to a vector of Rect objects where the bounding boxes of the balls will be stored.
  * @param color Reference to a vector of integers where the color codes of the balls will be stored.
  */
-void BALLreadDataFromFile(const std::string& filename, 
-                          std::vector<cv::Rect>& balls_footage, 
-                          std::vector<int>& color);
+void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vector<cv::Rect>& balls_footage, std::vector<int>& color);
 
 
 
@@ -98,7 +97,7 @@ void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& 
  * @param scheme_table_corners A vector of points representing the corners in the scheme table.
  * @return The best homography matrix (as a `cv::Mat`) that aligns the corners from the first image to the second image.
  */
-cv::Mat best_homg(std::vector<cv::Point2f> footage_table_corners, std::vector<cv::Point2f> scheme_table_corners);
+cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<cv::Point2f> scheme_table_corners);
 
 
 
@@ -170,7 +169,7 @@ void HSV_preprocessing(const std::vector<cv::Mat>& video_frames, std::vector<cv:
 
 
 
-// CLASSIFY_BALLS
+// IDENTIFY_MOVED_BALLS
 /**
  * @brief Classifies balls based on their movement or not between between two frames (first and last).
  *
@@ -183,7 +182,7 @@ void HSV_preprocessing(const std::vector<cv::Mat>& video_frames, std::vector<cv:
  * @param balls_footage Output vector where the bounding boxes of balls that have moved will be stored.
  * @param color Output vector where the colors of the balls that have moved will be stored.
  */
-void classifyBalls(const std::vector<cv::Rect>& balls_footage_first,
+void identifyMovedBalls(const std::vector<cv::Rect>& balls_footage_first,
                    const std::vector<cv::Rect>& balls_footage_last,
                    const std::vector<int>& color_first,
                    std::vector<cv::Rect>& balls_just_draw,
@@ -216,10 +215,12 @@ void resizeAndCopyToFrame(cv::Mat& table_scheme_mod,
  *
  * This function it is the main function that take and utilized most of the smaller function provided above.
  * @param video_frames Vector of Mat objects representing the original video frames.
- * @param TEST String representing the test case identifier or file path base.
+ * @param footage_table_corners vector of point that identify the corners of the table deriving from the video
+ * @param classified_boxes_first vector containing the bounding boxes of the balls in the first frame
+ * @param classified_boxes_last vector containing the bounding boxes of the balls in the last frame
  * @return A vector of Mat objects representing the modified video frames with drawn trajectories.
  */
-std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::string TEST, std::vector<cv::Point2f> footage_table_corners);                   
+std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::vector<cv::Point2f> footage_table_corners, std::vector<BoundingBox> classified_boxes_first, std::vector<BoundingBox> classified_boxes_last);                   
                    
                    
 #endif // HOMOGRAPHY_H
