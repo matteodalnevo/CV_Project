@@ -4,8 +4,10 @@
 
 // BALL_READ_DATA_FROM_FILE
 void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vector<cv::Rect>& balls_footage, std::vector<int>& color) {
+    const int augmentation = 15; // The offset to apply to the corner of bounding box to move it away from the ball
+
     for ( int i = 0; i < classified_boxes.size(); ++i){
-        cv::Rect rect(classified_boxes[i].box.x-15, classified_boxes[i].box.y-15, classified_boxes[i].box.width+30, classified_boxes[i].box.height+30);
+        cv::Rect rect(classified_boxes[i].box.x-augmentation, classified_boxes[i].box.y-augmentation, classified_boxes[i].box.width+2*augmentation, classified_boxes[i].box.height+2*augmentation);
         balls_footage.push_back(rect);
         color.push_back(classified_boxes[i].ID);
     }
@@ -120,7 +122,7 @@ cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<c
     double e3 = std::pow((H3.at<double>(0, 0) - 1), 2) + std::pow((H3.at<double>(1, 1) - 1), 2) + std::pow((H3.at<double>(2, 2) - 1), 2);
     double e4 = std::pow((H4.at<double>(0, 0) - 1), 2) + std::pow((H4.at<double>(1, 1) - 1), 2) + std::pow((H4.at<double>(2, 2) - 1), 2);
 
-    // Select the correct Homography matrix, the one with lower error
+    //// Select the correct Homography matrix, the one with lower error
     if (e1 < e2 && e1 < e3 && e1 < e4) {
         return H1;
     }
@@ -133,7 +135,7 @@ cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<c
     if (e4 < e1 && e4 < e3 && e4 < e2) {
         return H4;
     }
-    return H1;
+    else return H1;
 }
 
 
