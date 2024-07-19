@@ -41,7 +41,7 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     // std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
     // std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
 
-    std::cout << "Table Detection OK" << std::endl;
+    //std::cout << "Table Detection OK" << std::endl;
     
     return vertices;
 }

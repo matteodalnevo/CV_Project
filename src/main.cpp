@@ -35,10 +35,14 @@ int main() {
 
     for (int i = 0; i < imagePaths.size(); ++i) {
 
+        std::cout << "\nANALYSING: " << imagePaths[i].substr(8, 11) << std::endl;
+
         // Here we have the conversion into frames FRAMES ORIGINAL
         std::vector<cv::Mat> frames;
         double fps;
         std::tie(frames, fps) = videoToFrames(imagePaths[i]);
+
+        std::cout << "VIDEO EXTRAPOLATION: DONE" << std::endl;
 
         // PreProcessing Corners
         cv::Mat result_first;
@@ -49,9 +53,9 @@ int main() {
         std::vector<cv::Point2f> footage_corners;
         footage_corners = tableDetection(first_detected_lines);
 
-        // Color Table
-        //cv::Vec3b tableColor = ROItable(frames.front(), footage_corners);
+        std::cout << "TABLE DETECTION: DONE" << std::endl;
 
+        // Balls Detection and Hand Segmentation
         std::vector<cv::Rect> bboxes_first;
         std::vector<cv::Rect> bboxes_last;
 
@@ -61,13 +65,24 @@ int main() {
         std::tie(bboxes_first, hand_first) = ballsHandDetection(frames.front(), footage_corners);
         std::tie(bboxes_last, hand_last) = ballsHandDetection(frames.back(), footage_corners);
 
+        std::cout << "BALLS DETECTION and HAND SEGMNETATION: DONE" << std::endl;
+
+        // Balls Classification
         std::vector<BoundingBox> classified_boxes_first;
         std::vector<BoundingBox> classified_boxes_last;
 
         classified_boxes_first = ballClassification( frames.front(), bboxes_first);
         classified_boxes_last = ballClassification( frames.back(), bboxes_last);
-        
-        // segmentation 
+
+        std::cout << "BALLS CLASSIFICATION: DONE" << std::endl;
+
+        // Creation of the video
+        std::vector<cv::Mat> video_frames = homography_track_balls(frames,footage_corners,classified_boxes_first, classified_boxes_last);
+        framesToVideo(video_frames, "Result_"+std::to_string(i)+".mp4", fps); // TO BE USED ON TRACK OUT
+
+        std::cout << "VIDEO SAVING: DONE" << std::endl;
+
+        // Segmentation
         cv::Mat segmentation_first = segmentation(frames.front(),footage_corners, classified_boxes_first, hand_first );
         cv::Mat segmentation_last = segmentation(frames.back(),footage_corners, classified_boxes_last, hand_last);
 
@@ -75,34 +90,24 @@ int main() {
         mapGrayscaleMaskToColorImage( segmentation_first, first_col);
         mapGrayscaleMaskToColorImage( segmentation_last, last_col);
 
-        cv::imshow("segmentation_first", first_col);
-        cv::imshow("segmentation_last", last_col);
+        std::cout << "SEGMENTATION: DONE" << std::endl;
+        std::cout << "END" << std::endl;
 
         // Output images
-        //outputBBImage(frames.front(), footage_corners, classified_boxes_first);
-        //outputBBImage(frames.back(), footage_corners, classified_boxes_last);
+        outputBBImage(frames.front(), footage_corners, classified_boxes_first);
+        outputBBImage(frames.back(), footage_corners, classified_boxes_last);
 
         // Shows the results
-        //showImage(frames.front(),"First Frame");
-        //showImage(frames.back(),"Last Frame");
-
-    
-
-
+        showImage(frames.front(),"Bounding Boxes first frame");
+        showImage(frames.back(),"Bounding Boxes last frame");
+        showImage(first_col,"Segmentation first frame");
+        showImage(last_col,"Segmentation last frame");
+        showImage(video_frames.back(),"Game Trajectory last frame");
         cv::waitKey(0);
-        
-        //std::vector<cv::Mat> video_frames = homography_track_balls(frames,footage_corners,classified_boxes_first, classified_boxes_last);
-        //
-        //std::cout<<"\nVideo Creation"<<std::endl;
-        //framesToVideo(video_frames, "Result_"+std::to_string(i)+".mp4", fps); // TO BE USED ON TRACK OUT
 
-        cv::destroyAllWindows();
+        //cv::destroyAllWindows();
 
     }
-
-    // 
-
-    // 
 
     return 0;
 }

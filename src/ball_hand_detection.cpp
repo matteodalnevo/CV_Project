@@ -728,7 +728,9 @@ std::tuple<std::vector<cv::Rect>, cv::Mat> ballsHandDetection(const cv::Mat& img
     cv::cvtColor(displayImage, yuvImage, cv::COLOR_BGR2YUV);
     std::vector<cv::Mat> yuvChannels;
     cv::split(yuvImage, yuvChannels); // Split the channels
+    // Detection of the circles on the selected channels
     std::vector<cv::Vec3f> vCircles = detectCircles(yuvChannels[2], dp, minDist, param1, param2, minRadius, maxRadius, threshold_binary_image_value, gauss_ker);
+    // Insertion of the circles inside of the unifiedCircles vector
     unifiedCircles.insert(vCircles.begin(), vCircles.end());
     
     //HSV 
@@ -737,31 +739,42 @@ std::tuple<std::vector<cv::Rect>, cv::Mat> ballsHandDetection(const cv::Mat& img
     cv::cvtColor(displayImage, hsvImage, cv::COLOR_BGR2HSV);
     std::vector<cv::Mat> hsvChannels;
     cv::split(hsvImage, hsvChannels); // Split the channels
+    // Detection of the circles on the selected channels
     std::vector<cv::Vec3f> valueCircles = detectCircles(hsvChannels[2], dp, minDist, param1, param2, minRadius, maxRadius, threshold_binary_image_value, gauss_ker);
+    // Insertion of the circles inside of the unifiedCircles vector
     unifiedCircles.insert(valueCircles.begin(), valueCircles.end());
 
+
+    //HSV
     //Saturation component
     cv::Mat hsvImage2;
     cv::cvtColor(displayImage, hsvImage2, cv::COLOR_BGR2HSV);
     std::vector<cv::Mat> hsvChannelssat;
-    cv::split(hsvImage2, hsvChannelssat);
+    cv::split(hsvImage2, hsvChannelssat); // Split the channels
+    // Detection of the circles on the selected channels
     std::vector<cv::Vec3f> satCircles = detectCircles(hsvChannelssat[1], dp, minDist, param1, param2, minRadius, maxRadius, threshold_binary_image_value, gauss_ker);
+    // Insertion of the circles inside of the unifiedCircles vector
     unifiedCircles.insert(satCircles.begin(), satCircles.end());
 
 
-    // MERGE of all the circles
+    // Merge of the circles with the dedicated function, closer circles merged together w.r.t. the merge_circle_distance threshold
     std::vector<cv::Vec3f> mergedCircles = mergeCircles(std::vector<cv::Vec3f>(unifiedCircles.begin(), unifiedCircles.end()), merge_circle_distance);
 
-    // FILTER circles
+    // Filtering of the circles w.r.t. the playable field of the table 
     std::vector<cv::Vec3f> filteredCircles;
     for (const auto& circle : mergedCircles) {
+        
+        // Center of the circle 
         cv::Point2f center = cv::Point2f(circle[0], circle[1]);
+
+        // Check with the apposite function if it is inside of the playable field
         if (isPointInsidePolygon(center, smaller_corners_footage)) {
             filteredCircles.push_back(circle);
         }
     }
 
 
+    // Bounding box creation based in the center of the circles 
     std::vector<cv::Rect> detectedBoundingBoxes;
     for (const auto& circle : filteredCircles) {
         cv::Point2f topLeft(circle[0] - circle[2], circle[1] - circle[2]);
@@ -770,25 +783,25 @@ std::tuple<std::vector<cv::Rect>, cv::Mat> ballsHandDetection(const cv::Mat& img
         detectedBoundingBoxes.push_back(cv::Rect(topLeft.x, topLeft.y, width, height));
     }
 
-    // REMOVE OUTLIERS BBOXES
+    // Merge the bounding box if them are close to each other and have very difference dimension w.r.t. 
+    // the variables: merge_pixel_distance, merge_dim_difference, or if the share area is more than sharedarea value
     mergeBoundingBoxes(detectedBoundingBoxes, merge_pixel_distance, merge_dim_difference, sharedarea);
 
-    // REMOVE FALSE POSITIVES
-    //ColorMean means;
-
-    //std::vector<cv::Rect> filteredBboxes = detectedBoundingBoxes;
+    // Supplement Color filter on the bounding boxes if a big amount of inside pixels present colors close to the table, w.r.t. the variables 
     std::vector<cv::Rect> filteredBboxes = filterBoundingBoxes(displayImage, detectedBoundingBoxes,smaller_corners_footage, pixelsofcolor, margincolor);
 
-    // Hand mask
+    // Hand mask Threshold
     int threshold_hand = 100;
-
+    
+    // The following function, return an image of the mask of the hand (to be more precice, the hand is black and the rest white), in addition remove the bounding box on it 
     cv::Mat hand = HandMaskFiltering(filteredBboxes, displayImage, smaller_corners_footage , threshold_hand);
     
-    // Draw both detected and correct bounding boxes
+    // Draw detected bounding boxes
     drawBoundingBoxes(displayImage, filteredBboxes);
     
+    // Helpfull for plotting and debugging  
     // Draw the polygon on the image
-    drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
+    // drawPolygon(displayImage, smaller_corners_footage, cv::Scalar(0, 255, 0), 2); // Green color with thickness 2
 
     //cv::imshow("Hough Circles", displayImage);
     //cv::waitKey(0);

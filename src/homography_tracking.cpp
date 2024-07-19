@@ -118,7 +118,7 @@ void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& 
 
     writer.release();
 
-    std::cout << "\nVideo Correctly Saved \n" << std::endl;
+    //std::cout << "\nVideo Correctly Saved \n" << std::endl;
 }
 
 
@@ -415,8 +415,8 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
 
     // Find Homography transformation
     cv::Mat Homog = best_homog(footage_table_corners,scheme_corners); // This function provide the best homography matrix w.r.t. the four possible rotation of the corners
-    std::cout<<"\nThe best Homography matrix found is: \n"<<std::endl;
-    std::cout<<Homog<<std::endl;
+    //std::cout<<"\nThe best Homography matrix found is: \n"<<std::endl;
+    //std::cout<<Homog<<std::endl;
 
 
     // TRACKING
@@ -456,7 +456,7 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
     // Boolean vector where saving the state of the moving ball (once in the hole can't came back (rumor))
     std::vector<bool> ball_in(balls_footage.size(), false);
 
-    std::cout<<"\nStart Tracking the balls along the video"<<std::endl;
+    std::cout<<"TRACKING: START"<<std::endl;
 
     // Loop over all the frames 
     for (int j = 0; j < final_video.size(); ++j) {
@@ -488,7 +488,7 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
                     } else {
                         // If the center of the ball is outside the playable field it is considered in (goal/ scored point) and so no drawed as a ball
                         ball_in[i] = true;
-                        std::cout << "\nDuring the video one ball went into the pocket." << std::endl;
+                        //std::cout << "\nDuring the video one ball went into the pocket." << std::endl;
                     }
                 } else {
                     // Return a warning if the tracker fail in a specify frame
@@ -514,10 +514,12 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
 
             // Resized version of the scheme image and overwriting on the original videp            
             resizeAndCopyToFrame(table_scheme_mod, footage_homography, cloned_video_frames, j);
+
+
         }
     }
 
-
+    std::cout<<"TRACKING: DONE"<<std::endl;
     return cloned_video_frames;
 }
 
