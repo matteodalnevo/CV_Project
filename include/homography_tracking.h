@@ -1,6 +1,6 @@
-// homography.h
-#ifndef HOMOGRAPHY_H
-#define HOMOGRAPHY_H
+// homography_tracking.h
+#ifndef HOMOGRAPHY_TRACKING_H
+#define HOMOGRAPHY_TRACKING_H
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -17,7 +17,7 @@
 
 // BALL_READ_DATA_FROM_INPUT 
 /**
- * @brief Reads ball data from a file and stores it in the provided vectors.
+ * @brief Reads ball data (bounding boxes) from the input and stores it in the provided vectors subdividing the rectangle description and the color.
  *
  * @param classified_boxes vector of bounding boxes
  * @param balls_footage Reference to a vector of Rect objects where the bounding boxes of the balls will be stored.
@@ -27,15 +27,14 @@ void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vecto
 
 
 
-// TABLE_READ_POINTS_FROM_FILE (used during tests)
+// TABLE_READ_POINTS_FROM_FILE 
 /**
- * @brief Reads points from a file and stores them in the provided vector.
+ * @brief Reads cartesian points from a file and stores them in the provided vector.
  *
  * @param filename Const reference to a string representing the name of the file to read from.
  * @param points Reference to a vector of Point2f objects where the points will be stored.
  */
-void TABLEreadPointsFromFile(const std::string& filename, 
-                             std::vector<cv::Point2f>& points);
+void TABLEreadPointsFromFile(const std::string& corner_txt, std::vector<cv::Point2f>& points);
 
 
 
@@ -52,7 +51,7 @@ void TABLEreadPointsFromFile(const std::string& filename,
  * @param tolerance The allowable difference in position and size to still consider the ball as not moved. Default is 5.
  * @return `true` if the ball has moved beyond the specified tolerance, `false` otherwise.
  */
-bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, int tolerance = 5);
+bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, const int tolerance);
 
 
 
@@ -67,7 +66,7 @@ bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, int toleran
  * @return A tuple containing a vector of frames (each frame is a `cv::Mat` object) and a double representing the FPS of the video.
  *         If the video cannot be opened, an empty vector and 0.0 are returned.
  */
-std::tuple<std::vector<cv::Mat>, double> videoToFrames(const std::string& video_full_path);
+std::tuple<std::vector<cv::Mat>,const double> videoToFrames(const std::string& video_full_path);
 
 
 
@@ -82,16 +81,16 @@ std::tuple<std::vector<cv::Mat>, double> videoToFrames(const std::string& video_
  * @param output_filename The name of the output video file.
  * @param fps The frames per second (FPS) for the output video.
  */
-void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& output_filename, double fps);
+void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& output_filename, const double fps);
 
 
 
 // BEST_HOMOG
 /**
- * @brief Finds the best homography matrix to correctly align the passed corners.
+ * @brief Finds the best homography matrix to correctly align the passed corners, 4 different homography matrix are computed.
  * 
  * This function takes two sets of points representing corners of the tables. The first one derive from the footage (real image), instead the second set derive from the image scheme of the table. Then it calculates four possible homography matrices by rotating the first set of points (2 was enough).
- * It then determines the best homography matrix based on the smallest error.
+ * It then determines the best homography matrix based on the smallest error (smallest difference from the identity matrix w.r.t. the diagonal element).
  * 
  * @param footage_table_corners A vector of points representing the corners in the real footage.
  * @param scheme_table_corners A vector of points representing the corners in the scheme table.

@@ -1,6 +1,6 @@
 // ballDetection.h
-#ifndef BALLDETECTION_H
-#define BALLDETECTION_H
+#ifndef BALL_HAND_DETECTION_H
+#define BALL_HAND_DETECTION_H
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -17,7 +17,7 @@
 cv::Vec3b MedianColor(const cv::Mat& image);
 
 // Find the color of the table
-cv::Vec3b table(const cv::Mat& image, std::vector<cv::Point2f> vertices);
+cv::Vec3b tableColor(const cv::Mat& image, std::vector<cv::Point2f> vertices);
 
 
 // Print the bounding boxes
@@ -26,7 +26,7 @@ void printBoundingBoxes(const std::vector<cv::Rect>& filteredBboxes);
 cv::Mat best_homog_detection(std::vector<cv::Point2f> footage_table_corners, std::vector<cv::Point2f> scheme_table_corners);
 
 // DRAWPOLYGON, not needed in the final code OK
-void drawPolygon(cv::Mat& image, const std::vector<cv::Point2f>& polygon, const cv::Scalar& color, int thickness);
+void drawPolygon(cv::Mat& image, const std::vector<cv::Point2f>& polygon, const cv::Scalar& color, const int thickness);
 
 // Necessary structure to be able to compare the elements OK
 struct Vec3fComparator {
@@ -41,7 +41,7 @@ struct Vec3fComparator {
 cv::Mat computeSobel(const cv::Mat& gray);
 
 // Function to detect circles using Hough Transform OK
-std::vector<cv::Vec3f> detectCircles(cv::Mat& image, int dp, int minDist, int param1, int param2, int minRadius, int maxRadius, int threshold_value, cv::Size gauss_ker);
+std::vector<cv::Vec3f> detectCircles(cv::Mat& image, const int dp, const int minDist, const int param1, const int param2, const int minRadius, const int maxRadius, const int threshold_value, const cv::Size gauss_ker);
 
 // Function to draw bounding boxes around detected circles, just intermidiate function to check OK
 void drawBoundingBoxes(cv::Mat& image, const std::vector<cv::Rect>& boundingBoxes);
@@ -73,31 +73,31 @@ struct ColorMean {
 };
 
 // Check if the color is closer to the particular ones
-bool isColorClose(const cv::Vec3f& color1, const cv::Vec3f& color2, float margin);
+bool closeColor(const cv::Vec3f& color1, const cv::Vec3f& color2, const float margin);
 
 // Check on the false positives, derived from the color matching 
-bool isFalsePositive(const cv::Mat& image, const cv::Rect& bbox, const cv::Vec3b& mean, float threshold, float margin);
+bool falsePositive(const cv::Mat& image, const cv::Rect& bbox, const cv::Vec3b& mean, const float threshold, const float margin) ;
 
 // Filtered based on color 
-std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const std::vector<cv::Point2f>& vertices, float threshold, float margin);
+std::vector<cv::Rect> filterBoundingBoxes(const cv::Mat& image, const std::vector<cv::Rect>& bboxes, const std::vector<cv::Point2f>& vertices, const float threshold, const float margin);
 
 // Distance between bounding boxes
-double calculateDistance(cv::Point2f p1, cv::Point2f p2);
+double calculateDistance(const cv::Point2f p1, const cv::Point2f p2);
 
 // Check on the intersection area
 double intersectionArea(const cv::Rect& r1, const cv::Rect& r2);
 
 // Merged rectangle
-cv::Rect mergeBoundingBoxes(const cv::Rect& r1, const cv::Rect& r2);
+cv::Rect mergedBoundingBoxes(const cv::Rect& r1, const cv::Rect& r2);
 
 // Merging function
-void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, int& pixeldistance, float& dimdifference, float& sharedarea);
+void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, const int pixeldistance, const float dimdifference, const float sharedarea);
 
 //hand detection
-cv::Mat HandMask(std::vector<cv::Rect>& bbox, cv::Mat image, const std::vector<cv::Point2f>& areaOfInterest, double threshold_hand);
+cv::Mat HandMaskFiltering( std::vector<cv::Rect>& bbox, const cv::Mat& image, const std::vector<cv::Point2f>& areaOfInterest, const double threshold_hand);
 
 // Overall function
-std::tuple<std::vector<cv::Rect>, cv::Mat> ballsDetection(cv::Mat img, std::vector<cv::Point2f> polygon);
+std::tuple<std::vector<cv::Rect>, cv::Mat> ballsHandDetection(const cv::Mat& img, const std::vector<cv::Point2f> polygon);
 
 
 #endif // BALLDETECTION_H

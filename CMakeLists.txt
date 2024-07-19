@@ -15,10 +15,10 @@ include_directories(include)
 # Add executable targets
 add_executable(main src/homography_main.cpp
                src/utils.cpp
-               src/ballDetection.cpp
+               src/ball_hand_detection.cpp
                src/ballClassification.cpp
                src/tableDetection.cpp
-               src/homography.cpp
+               src/homography_tracking.cpp
                src/preProcess.cpp)
 
 target_link_libraries(main ${OpenCV_LIBS})

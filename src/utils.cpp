@@ -1,3 +1,5 @@
+// MATTEO DAL NEVO - ID: 2087919
+
 // utils.cpp
 #include "utils.h"
 #include <fstream>
@@ -7,13 +9,13 @@
 // Function to show an image
 void showImage(const cv::Mat& image, const std::string& windowName) {
     // Create a window
-    cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
+    cv::namedWindow(windowName, cv::WINDOW_NORMAL);
 
     // Show the image inside the created window
     cv::imshow(windowName, image);
 
     // Wait for any keystroke in the window
-    // cv::waitKey(0);
+    //cv::waitKey(0);
     // cv::destroyAllWindows();
 }
 
@@ -63,5 +65,66 @@ void mapGrayscaleMaskToColorImage(const cv::Mat& grayscaleMask, cv::Mat& colorIm
             cv::Scalar color = getColorForValue(value);
             colorImage.at<cv::Vec3b>(i, j) = cv::Vec3b(color[0], color[1], color[2]);
         }
+    }
+}
+
+// Function to plot a Ball's Bounding Box in an image based on the ID
+
+void plotBBox(cv::Mat& image, BoundingBox& bbox) {
+    // Create a transparent overlay with the same size as the original image
+    cv::Mat overlay = cv::Mat::zeros(image.size(), CV_8UC3);
+    // Transparency level
+    double alpha;
+    // Initialize the color
+    cv::Scalar color;
+    switch (bbox.ID) {
+        case 1:
+            color = cv::Scalar(255, 255, 255); // White - white ball
+            alpha = 0.2;
+            break;
+        case 2:
+            color = cv::Scalar(20, 20, 20); // Black - black ball
+            alpha = 1;
+            break;
+        case 3:
+            color = cv::Scalar(0, 0, 255); // Red - solid ball
+            alpha = 0.4;
+            break;
+        case 4:
+            color = cv::Scalar(255, 0, 0); // Blue - striped ball
+            alpha = 0.4;
+            break;
+        default:
+            break;
+    }
+
+    if (bbox.ID != -1) {
+        // Draw the Bounding Box contour on the original image
+        cv::rectangle(image, bbox.box, color, 2);
+        // Draw a filled rectangle on the overlay
+        cv::rectangle(overlay, bbox.box, color, cv::FILLED);
+        // Blend the overlay with the original image
+        cv::addWeighted(overlay, alpha, image, 1.0, 0.0, image);
+    }
+    
+}
+
+// Function that draw the table's profile in Yellow and the Balls Bounding Box
+void outputBBImage(cv::Mat& image, std::vector<cv::Point2f> vertices, std::vector<BoundingBox> classified_boxes) {
+    
+    // Convert the vector from cv::Point2f to cv::Point
+    std::vector<cv::Point> points;
+    for (const auto& vertex : vertices) {
+        points.push_back(cv::Point(static_cast<int>(vertex.x), static_cast<int>(vertex.y)));
+    }
+
+    // Draw the quadrilateral by connecting the vertices
+    std::vector<std::vector<cv::Point>> contours;
+    contours.push_back(points);
+    cv::polylines(image, contours, true, cv::Scalar(0, 255, 255), 2); // Yellow color with thickness 2
+
+    for (auto& bbox : classified_boxes) {
+        // Plot the Classified Bounding Box
+        plotBBox(image, bbox);
     }
 }
