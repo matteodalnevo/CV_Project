@@ -1,7 +1,7 @@
 // Homography_main.cpp
-#include "homography.h"
+#include "homography_tracking.h"
 #include "tableDetection.h"
-#include "ballDetection.h"
+#include "ball_hand_detection.h"
 #include "utils.h"
 #include "preProcess.h"
 #include "ballClassification.h"
@@ -299,14 +299,14 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         cv::Mat hand_first;
         cv::Mat hand_last;
         
-        std::tie(bboxes_first, hand_first) = ballsDetection(frames.front(), footage_corners);
-        std::tie(bboxes_last, hand_last) = ballsDetection(frames.back(), footage_corners);
+        std::tie(bboxes_first, hand_first) = ballsHandDetection(frames.front(), footage_corners);
+        std::tie(bboxes_last, hand_last) = ballsHandDetection(frames.back(), footage_corners);
 
         //Define and compute vector of correct Bounding Boxes with classification
         std::vector<BoundingBox> classified_boxes_first;
         std::vector<BoundingBox> classified_boxes_last;
-        classified_boxes_first = ballClassification( frames.front(), bboxes_first, tableColor);
-        classified_boxes_last = ballClassification( frames.back(), bboxes_last, tableColor);
+        classified_boxes_first = ballClassification( frames.front(), bboxes_first);
+        classified_boxes_last = ballClassification( frames.back(), bboxes_last);
 
         //showImage(frames.front(), "First frame");
         //showImage(frames.back(), "Last frame"); 
