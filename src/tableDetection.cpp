@@ -1,3 +1,5 @@
+// Prevedello Aaron
+
 #include "tableDetection.h"
 #include "utils.h"
 #include <iostream>
@@ -45,11 +47,8 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     // std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
     // std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
     // std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
-<<<<<<< Updated upstream
 
     //std::cout << "Table Detection OK" << std::endl;
-=======
->>>>>>> Stashed changes
     
     return vertices;
 }

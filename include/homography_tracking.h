@@ -1,4 +1,5 @@
-// homography_tracking.h
+// Panizzo Marco
+
 #ifndef HOMOGRAPHY_TRACKING_H
 #define HOMOGRAPHY_TRACKING_H
 

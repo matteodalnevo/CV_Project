@@ -1,4 +1,5 @@
-// ballDetection.h
+// Panizzo Marco
+
 #ifndef BALL_HAND_DETECTION_H
 #define BALL_HAND_DETECTION_H
 

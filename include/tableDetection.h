@@ -1,4 +1,5 @@
-// tableDetection.h
+// Prevedello Aaron
+
 #ifndef TABLEDETECTION_H
 #define TABLEDETECTION_H
 
