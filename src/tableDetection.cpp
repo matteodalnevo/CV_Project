@@ -4,7 +4,8 @@
 #include <tuple>
 
 
-// Function to show an image
+// TABLE DETECTION
+
 std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     
     std::vector<cv::Vec2f> verticalLines, horizontalLines;
@@ -17,7 +18,7 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     std::vector<cv::Vec2f> topHoriz, lowHoriz, leftVert, rightVert;
     std::tie(topHoriz, lowHoriz, leftVert, rightVert) = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
 
-    //Drawing of the 4 groups of lines
+    // Optional for debugging: draw the 4 groups of lines
     // drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
     // drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
     // drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
@@ -29,19 +30,26 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     vertDx = findMediumLine(rightVert);
     horizUp = findMediumLine(topHoriz);
     horizBot = findMediumLine(lowHoriz);    
+
+    // Check if left and vertical lines have to be splitted
     checkLeftRight(vertSx, vertDx);   
     
+    // Define and compute the table corners
     cv::Point2f pt1, pt2, pt3, pt4;
     std::tie(pt1, pt2, pt3, pt4) = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
     std::vector<cv::Point2f> vertices = {pt1, pt2, pt3, pt4};
 
+    // Optional for debugging: print of the corners coordinates
     // std::cout << "PT1: x = " << pt1.x << "  y = " << pt1.y << std::endl;
     // std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
     // std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
     // std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
+<<<<<<< Updated upstream
 
     //std::cout << "Table Detection OK" << std::endl;
+=======
+>>>>>>> Stashed changes
     
     return vertices;
 }
@@ -167,138 +175,94 @@ static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour){
     cv::waitKey(0);
 }
 
-std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>> findGroupOfLines(std::vector<cv::Vec2f> horizontalLine, std::vector<cv::Vec2f> verticalLine, float meanVert, float meanHoriz) {
+std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>> findGroupOfLines(const std::vector<cv::Vec2f> &horizontalLine, const std::vector<cv::Vec2f> &verticalLine, const float meanVert, const float meanHoriz) {
     
     // Define vectors to store the four lines
     std::vector<cv::Vec2f> topHoriz, lowHoriz, leftVert, rightVert;
     float lastTheta, lastRho;
-    float meanRhoTop = 0, meanRhoLow = 0, meanRhoLeft = 0, meanRhoRight = 0;
-    float meanThetaTop = 0, meanThetaLow = 0, meanThetaLeft = 0, meanThetaRight = 0;
+
+    // Thresholds to discard lines representing the sticks of the players 
+    const float threshold_orientation = 15 * CV_PI / 180.0;
+    const int threshold_distance = 75;
+
+    // Iterate through each vertical line
     for( size_t i = 0; i < verticalLine.size(); i++ ) {
-        if (verticalLine[i][0] >= meanVert) {            
+        // If the line is on the right side, add it to the rightVert vector 
+        if (verticalLine[i][0] >= meanVert) { 
+                     
             rightVert.push_back(verticalLine[i]);
             lastTheta = verticalLine[i][1];
             lastRho = verticalLine[i][0];
-            if ((abs(lastTheta - rightVert[0][1]) > 0.2617)) {  //15 deg
+
+            // If the current line is not parallel to the group mean, then it is discarded
+            if ((abs(lastTheta - rightVert[0][1]) > threshold_orientation)) {  //15 deg
                 rightVert.pop_back();
-                //std::cout << "Miao" << std::endl;
             }
-                
-            //meanRhoRight += verticalLine[i][0];
-            //meanThetaRight += verticalLine[i][1];
         }
+        // If the line is on the left side, add it to the leftVert vector
         else {
             leftVert.push_back(verticalLine[i]);
             lastTheta = verticalLine[i][1];
             lastRho = verticalLine[i][0];
-            if ((abs(lastTheta - leftVert[0][1]) > 0.2617)) {  //15 deg
+            if ((abs(lastTheta - leftVert[0][1]) > threshold_orientation)) { 
                 leftVert.pop_back();
-                //std::cout << "Miao" << std::endl;
             }
-            //meanRhoLeft += verticalLine[i][0];
-            //meanThetaLeft += verticalLine[i][1];
         }
     }
+
+    // Iterate through each horizontal line
     for( size_t i = 0; i < horizontalLine.size(); i++ ) {
+        // If the line is on the lower side, add it to the lowHoriz vector
         if (horizontalLine[i][0] >= meanHoriz) {
             lowHoriz.push_back(horizontalLine[i]);
             lastRho = horizontalLine[i][0];
             lastTheta = horizontalLine[i][1];
-            if ((abs(lastTheta - lowHoriz[0][1]) > 0.2617) || (abs(lastRho - lowHoriz[0][0]) > 75)) {  //15 deg
+
+            // Check if the angle difference exceeds 15 degrees (0.2617 radians) or rho difference exceeds 75 units, if so, remove the line
+            if ((abs(lastTheta - lowHoriz[0][1]) > threshold_orientation) || (abs(lastRho - lowHoriz[0][0]) > threshold_distance)) {  
                 lowHoriz.pop_back();
-                //std::cout << "Miao" << std::endl;
             }
-            //meanRhoLow += horizontalLine[i][0];
-            //meanThetaLow += horizontalLine[i][1];
         }
+        // If the line is on the upper side, add it to the topHoriz vector
         else {
             topHoriz.push_back(horizontalLine[i]);
             lastRho = horizontalLine[i][0];
             lastTheta = horizontalLine[i][1];
-            if ((abs(lastTheta - topHoriz[0][1]) > 0.2617) || (abs(lastRho - topHoriz[0][0]) > 75)) { //15 deg
+
+            // Check if the angle difference exceeds 15 degrees (0.2617 radians) or rho difference exceeds 75 units, if so, remove the line
+            if ((abs(lastTheta - topHoriz[0][1]) > threshold_orientation) || (abs(lastRho - topHoriz[0][0]) > threshold_distance)) { 
                 topHoriz.pop_back();
-                //std::cout << "Miao" << std::endl;
             }
-            //meanRhoTop += horizontalLine[i][0];
-            //meanThetaTop += horizontalLine[i][1];
         }
     }
-
-    meanRhoRight = meanRhoRight / rightVert.size();
-    meanRhoLeft = meanRhoLeft / leftVert.size();
-    meanThetaRight = meanThetaRight / rightVert.size();
-    meanThetaLeft = meanThetaLeft / leftVert.size();
-
-    meanRhoTop = meanRhoTop / topHoriz.size();
-    meanRhoLow = meanRhoLow/ lowHoriz.size();
-    meanThetaTop = meanThetaTop / topHoriz.size();
-    meanThetaLow = meanThetaLow / lowHoriz.size();
 
     return std::make_tuple(topHoriz, lowHoriz, leftVert, rightVert);
 }
 
-/* std::tuple<cv::Vec2f, cv::Vec2f, cv::Vec2f, cv::Vec2f> findRepresentativeLine(std::vector<cv::Vec2f> horizontalLine, std::vector<cv::Vec2f> verticalLine, float meanVert, float meanHoriz) {
-    std::vector<cv::Vec2f> topHoriz, lowHoriz, leftVert, rightVert;
-    float meanRhoTop = 0, meanRhoLow = 0, meanRhoLeft = 0, meanRhoRight = 0;
-    float meanThetaTop = 0, meanThetaLow = 0, meanThetaLeft = 0, meanThetaRight = 0;
-    for( size_t i = 0; i < verticalLine.size(); i++ ) {
-        if ((verticalLine[i][0] >= meanVert)) {
-            rightVert.push_back(verticalLine[i]);
-            meanRhoRight += verticalLine[i][0];
-            meanThetaRight += verticalLine[i][1];
-        }
-        else {
-            leftVert.push_back(verticalLine[i]);
-            meanRhoLeft += verticalLine[i][0];
-            meanThetaLeft += verticalLine[i][1];
-        }
-    }
-    meanRhoRight = meanRhoRight / rightVert.size();
-    meanRhoLeft = meanRhoLeft / leftVert.size();
-    meanThetaRight = meanThetaRight / rightVert.size();
-    meanThetaLeft = meanThetaLeft / leftVert.size();
-    //if rho<0, wrong detection of left and right vertical lines -> swap
-    if (meanRhoLeft <= 0) {
-        float temp1;
-        temp1 = meanRhoRight;
-        meanRhoRight = meanRhoLeft;
-        meanRhoLeft = temp1;
 
-        temp1 = meanThetaRight;
-        meanThetaRight = meanThetaLeft;
-        meanThetaLeft = temp1;
-    }
+// FIND MEDIUM LINE FROM THE GROUP
 
-    for( size_t i = 0; i < horizontalLine.size(); i++ ) {
-        if (horizontalLine[i][0] >= meanHoriz) {
-            lowHoriz.push_back(horizontalLine[i]);
-            meanRhoLow += horizontalLine[i][0];
-            meanThetaLow += horizontalLine[i][1];
-        }
-        else {
-            topHoriz.push_back(horizontalLine[i]);
-            meanRhoTop += horizontalLine[i][0];
-            meanThetaTop += horizontalLine[i][1];
-        }
-    }
-    meanRhoTop = meanRhoTop / topHoriz.size();
-    meanRhoLow = meanRhoLow/ lowHoriz.size();
-    meanThetaTop = meanThetaTop / topHoriz.size();
-    meanThetaLow = meanThetaLow / lowHoriz.size();
-    return std::make_tuple(cv::Vec2f(meanRhoTop, meanThetaTop), cv::Vec2f(meanRhoLow, meanThetaLow), cv::Vec2f(meanRhoLeft, meanThetaLeft), cv::Vec2f(meanRhoRight, meanThetaRight));
-} */
+cv::Vec2f findMediumLine(const std::vector<cv::Vec2f> &lineVector) {
 
-cv::Vec2f findMediumLine(std::vector<cv::Vec2f> lineVector) {
+    // Define values for accumulating values 
     float rho = 0, theta = 0;
+
+    // Iterate over vector of lines
     for (size_t i = 0; i < lineVector.size(); i++) {
+        // Accumulate parameters of the current line
         rho += lineVector[i][0];
         theta += lineVector[i][1];
     }
+
+    // Compute mean values of the lines 
     rho = rho / lineVector.size();
     theta = theta / lineVector.size();
 
     return cv::Vec2f(rho, theta);
 }
+
+
+// INVERT LEFT AND RIGHT LINES
 
 static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right) {
         if (left[0] <= 0) {
@@ -313,26 +277,48 @@ static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right) {
     }
 }
 
+
+// COMPUTE INTERCEPTION POINT BETWEEN TWO LINES
+
 cv::Point2f computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
-    //compute slope and intercept from rho, theta
-    float m1 = 0, m2 = 0, q1 = 0, q2 = 0;
+    
+    // Initialize variables to store slopes and intercepts of the two lines
+    float m1 = 0, m2 = 0, q1 = 0, q2 = 0; 
+    
+    // Compute slope and intercept from rho, theta of the two lines
     m1 = -(cos(line1[1]) / sin(line1[1]));
     m2 = -(cos(line2[1]) / sin(line2[1]));
     q1 = line1[0] / sin(line1[1]);
     q2 = line2[0] / sin(line2[1]);
-    if ( m1 == -INFINITY )
-    {   
-        //std::cout << "ENTERED THE IF" << std::endl;
+
+    // heck if the first line is vertical 
+    if ( m1 == -INFINITY ) {   
+        
         float x = cvRound(line1[0]);
         float y = cvRound(m2 * x + q2);
-
+        
+        // Optional for debugging: 
+        //std::cout << "ENTERED THE IF" << std::endl;
+        
+        // Return the intersection point
         return cv::Point2f(x, y); 
     }
 
+    // Check if the second line is vertical 
+    if (m2 == -INFINITY) {
+        
+        float x = cvRound(line2[0]);
+        float y = cvRound(m1 * x + q1);
+
+        // Return the intersection point
+        return cv::Point2f(x, y);
+    }
+
+    // Optional for Debugging: print on screen slope and intercept of the two lines
     //std::cout << "m1: " << m1 << "  q1: " << q1 << std::endl;
     //std::cout << "m2: " << m2 << " q2: " << q2 << std::endl;
 
-    //compute intercept cordinates
+    // Compute intercept cordinates
     float x = cvRound((q2 - q1) / (m1 - m2));
     float y = cvRound(m1 * x + q1);
 
@@ -340,6 +326,9 @@ cv::Point2f computeIntercept (cv::Vec2f line1, cv::Vec2f line2) {
 
     return cv::Point2f(x, y);
 }
+
+
+// COMPUTE FOUR CORNERS
 
 std::tuple<cv::Point2f, cv::Point2f, cv::Point2f, cv::Point2f> computeCorners(cv::Vec2f topHoriz, cv::Vec2f lowHoriz, cv::Vec2f leftVert, cv::Vec2f rightVert) {
     //Compute intercept coordinates
@@ -349,69 +338,11 @@ std::tuple<cv::Point2f, cv::Point2f, cv::Point2f, cv::Point2f> computeCorners(cv
     pt3 = computeIntercept(rightVert, lowHoriz);       //bottom right
     pt4 = computeIntercept(leftVert, lowHoriz);       //bottom left
 
+    // Optional for debugging: print the points
     //std::cout << "Pt1 x: " << pt1.x << "       y: " << pt1.y << std::endl;
     //std::cout << "Pt2 x: " << pt2.x << "       y: " << pt2.y << std::endl;
     //std::cout << "Pt3 x: " << pt3.x << "       y: " << pt3.y << std::endl;
     //std::cout << "Pt4 x: " << pt4.x << "       y: " << pt4.y << std::endl;
 
-    return std::make_tuple(pt1,pt4,pt3, pt2); //from top-left in counterclockwise order
-}
-
-cv::Mat computeMask(cv::Mat image) {
-    int rows = image.rows, cols = image.cols, thresholdz = 50;
-    std::vector<cv::Vec3b> color_acc;
-
-    // Accumulate colors that are not black
-    for (int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            if(image.at<cv::Vec3b>(i, j)[0] != 0 ||
-               image.at<cv::Vec3b>(i, j)[1] != 0 ||
-               image.at<cv::Vec3b>(i, j)[2] != 0) {
-                color_acc.push_back(image.at<cv::Vec3b>(i, j));
-            }
-        }
-    }
-
-    // Calculate the mean color
-    cv::Vec3d sumColor(0, 0, 0);
-    for(const auto& color : color_acc) {
-        sumColor[0] += color[0];
-        sumColor[1] += color[1];
-        sumColor[2] += color[2];
-    }
-    cv::Vec3b meanColor;
-    if (!color_acc.empty()) {
-        meanColor[0] = sumColor[0] / color_acc.size();
-        meanColor[1] = sumColor[1] / color_acc.size();
-        meanColor[2] = sumColor[2] / color_acc.size();
-    }
-
-    // Initialize the masked image with the same size and type as the input image
-    cv::Mat maskedImg = image.clone();
-
-    // Apply the mask based on the threshold
-    for (int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            cv::Vec3b temp = image.at<cv::Vec3b>(i, j);
-            cv::Vec3b diff = temp - meanColor;
-            if(diff[0] < thresholdz && diff[1] < thresholdz && diff[2] < thresholdz) {
-                maskedImg.at<cv::Vec3b>(i, j) = meanColor;
-            }
-        }
-    }
-
-    return maskedImg;
-}
-
-cv::Mat enhanceColourContrast (cv::Mat input_img) {
-    cv::Mat out_img;
-    std::vector<cv::Mat> hsv_mid;
-    cv::cvtColor(input_img, out_img, cv::COLOR_BGR2HSV);
-    cv::split(out_img, hsv_mid);
-    hsv_mid[1] *= 2;
-    hsv_mid[2] *= 0.8;
-    cv::merge(hsv_mid, out_img);
-    cv::cvtColor(out_img, out_img, cv::COLOR_HSV2BGR);
-
-    return out_img;
+    return std::make_tuple(pt1, pt4, pt3, pt2); //from top-left in counterclockwise order
 }

@@ -19,19 +19,6 @@ struct performanceMIou {
     std::vector<double> class6;
 };
 
-/** @brief 
- */
-struct accumulationForAPvalues {
-    std::vector<double> ious_class1;
-    std::vector<double> ious_class2;
-    std::vector<double> ious_class3;
-    std::vector<double> ious_class4;
-    int totalDetects_class1;
-    int totalDetects_class2;
-    int totalDetects_class3;
-    int totalDetects_class4;
-};
-
 /** @brief Struct to accumulate values of ground truth boxes on the images, one value for each class.
  *  Useful to compute final mAP result.
  */
@@ -140,7 +127,16 @@ std::tuple<vectorsOfIoUStruct, groundTruthLengths> computeVectorsOfIoU(const std
  */
 double finalMIou(const performanceMIou &iouStructure);
 
-//Insert the new values of IoU into the structure that stores all the IoU Values for all the classes
+/** @brief Insert the values of iouVector into the structure that stores the values of all the images
+ * @param iouStructure Structure where to append the vectors
+ * @param iouVector vector of Iou values to append
+ */
 void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector);
+
+/** @brief Accumulate IoU values and ground truth lengths for a single image
+ *  @param globalAccumulator Struct where to insert the actual values
+ *  @param 
+ */
+//void accumulateIoUAndGT (AccumulatorForMAP& globalAccumulator, const vectorsOfIoUStruct& IoUtotals, const groundTruthLengths& lengthTotals);
 
 #endif // PERFORMANCE_H

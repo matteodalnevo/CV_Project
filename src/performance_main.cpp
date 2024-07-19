@@ -172,11 +172,11 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         // cv::imshow("Ground Truth First", result_segm_first);
         // cv::imshow("Ground Truth Last", result_segm_last);
 
+        // FIRST METRIC: mean Intersection over Union computed on segmented masks
+
         //Compute vector of IoU for each class on the segmented images
         std::vector<double> IoU_first = segmentationIoU(segmentation_gt_first, segmentation_first);
         std::vector<double> IoU_last = segmentationIoU(segmentation_gt_last, segmentation_last);
-
-        
 
         // Optional for debugging: Print the values of IoU for each class of the first and last frame of the current clip
         // std::cout << "Segmentation IoU vector for first image " << std::endl;
@@ -195,11 +195,15 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         accumulateIouValues(iouAccumulator, IoU_first);
         accumulateIouValues(iouAccumulator, IoU_last); 
 
+        // END OF FIRST METRIC
+
         //Compute mean AP over ball localization and classification
         //Extract vector of correct bounding boxes
         std::vector<BoundingBox> groundTruthBoxesFirst, groundTruthBoxesLast;
         readBoundingBoxes(boxesFirstFramePaths[i], groundTruthBoxesFirst);
         readBoundingBoxes(boxesLastFramePaths[i], groundTruthBoxesLast);
+
+        // SECOND METRIC: mean Average Precision omputed on vectors of BoundingBoxes
 
         //Define struct where to store IoU values and number of total object to be detected for a single image
         vectorsOfIoUStruct IoUtotals;
@@ -232,8 +236,10 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         totalObjects_class3 += lengthTotals.class3;
         totalObjects_class4 += lengthTotals.class4; 
 
-        std::cout << "##Clip " << imagePaths[i] << "          OK" << std::endl;
-        std::cout << "-------------------------------------------------------------------------------------------------------" << std::endl;   
+        // END OF SECOND METRIC
+
+        std::cout << "Clip " << imagePaths[i] << "          OK" << std::endl;
+        std::cout << "------------------------------------------------------" << std::endl;   
 
     }
 

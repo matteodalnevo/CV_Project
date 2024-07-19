@@ -288,7 +288,7 @@ double computeAP(const std::vector<double> &vectorIoU, const int totalObjects) {
 
         // If Iou value is -1 skip this detection
         if(vectorIoU[i] == -1 ) {
-            std::cout << "IoU = -1: continue" << std::endl;
+            // std::cout << "IoU = -1: continue" << std::endl;
             continue;
         }
 
@@ -435,11 +435,17 @@ double finalMIou(const performanceMIou &iouStructure) {
     return final_perf;
 }
 
+// INSERT IOU OF THE CURRENT SEGMENTED IMAGE ON THE STRUCTURE
+
 void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector) {
+
+    // Push back the values into the vectors, one value for each class
     iouStructure.class1.push_back(iouVector[0]);
     iouStructure.class2.push_back(iouVector[1]);
     iouStructure.class3.push_back(iouVector[2]);
     
+    // For solid and striped balls check that the Iou is not -1, 
+    // that would mean that that class is not present nor in the ground truth segmented mask, nor in our classification
     if (iouVector[3] != -1) {
         iouStructure.class4.push_back(iouVector[3]);
     }
