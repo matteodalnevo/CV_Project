@@ -13,13 +13,16 @@
 
 
 /** @brief Split lines between horizontal and vertical lines, based on theta.
-
+ *  Lines are assumed to be expressed by parameters rho and theta, like output of function cv::HoughLines 
+ *  @param lines vector of all the lines that must be splitted
+ *  @param horizontalLines vector where to insert the horizontal lines founded 
+ *  @param verticalLines vector where to insert the vertical lines founded
  */
-std::tuple<float, float> splitHorVertLines(std::vector<cv::Vec2f> lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines );
+std::tuple<float, float> splitHorVertLines(const std::vector<cv::Vec2f> &lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines );
 
 
-/** @brief Draw a set of lines on the given image, choosing also the color
-
+/** @brief Draw a set of lines on the given image wioth the specified color
+ *  @param 
  */
 static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colour);
 

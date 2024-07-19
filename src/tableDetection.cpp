@@ -8,19 +8,6 @@
 std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     
     std::vector<cv::Vec2f> verticalLines, horizontalLines;
-    /*int lowThreshold = 40, upperThreshold = 80, blur_kernel = 3;
-    cv::Mat img_gray, detected_edges, out_hough, final_edges;
-    cvtColor(image, img_gray, cv::COLOR_BGR2GRAY);
-    cv::blur( img_gray, detected_edges, cv::Size(blur_kernel, blur_kernel) );
-    cv::Canny( detected_edges, detected_edges, lowThreshold, upperThreshold, 3 );
-
-    // Copy edges to the images that will display the results in BGR
-    cvtColor(detected_edges, out_hough, cv::COLOR_GRAY2BGR);
-    cvtColor(detected_edges, final_edges, cv::COLOR_GRAY2BGR);
-    cv::imshow("Debug ", out_hough);
-    // Standard Hough Line Transform
-     // will hold the results of the detection
-    HoughLines(detected_edges, lines, 1, CV_PI/180, 180, 0, 0 ); // runs the actual detection */
 
     //First split between horizontal and vertical lines
     float meanHoriz, meanVert;
@@ -31,10 +18,10 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     std::tie(topHoriz, lowHoriz, leftVert, rightVert) = findGroupOfLines(horizontalLines, verticalLines, meanVert, meanHoriz);
 
     //Drawing of the 4 groups of lines
-    /* drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
-    drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
-    drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
-    drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0)); */
+    // drawLines(topHoriz, out_hough, cv::Scalar(255, 0, 255));
+    // drawLines(lowHoriz, out_hough, cv::Scalar(0, 255, 0));
+    // drawLines(leftVert, out_hough, cv::Scalar(0, 255, 255));
+    // drawLines(rightVert, out_hough, cv::Scalar(255, 255, 0));
     
     //Identify the mean line for each group
     cv::Vec2f vertSx, vertDx, horizUp, horizBot;
@@ -42,133 +29,147 @@ std::vector<cv::Point2f> tableDetection(const std::vector<cv::Vec2f> lines) {
     vertDx = findMediumLine(rightVert);
     horizUp = findMediumLine(topHoriz);
     horizBot = findMediumLine(lowHoriz);    
-    checkLeftRight(vertSx, vertDx);
-    //checkForStick();
-
-    //Draw the single medium lines for each group
-    /* drawSingleLine(horizUp, final_edges, cv::Scalar(255, 0, 255));
-    drawSingleLine(horizBot, final_edges, cv::Scalar(0, 255, 0));
-    drawSingleLine(vertSx, final_edges, cv::Scalar(0, 255, 255));
-    drawSingleLine(vertDx, final_edges, cv::Scalar(255, 255, 0));    */
+    checkLeftRight(vertSx, vertDx);   
     
     cv::Point2f pt1, pt2, pt3, pt4;
     std::tie(pt1, pt2, pt3, pt4) = computeCorners(horizUp, horizBot, vertSx, vertDx);
 
-    //std::cout << "pt1: x = " << pt1.x << "   y = " << pt1.y << std::endl;
-    //std::cout << "pt2: x = " << pt2.x << "   y = " << pt2.y << std::endl;
-    //std::cout << "pt3: x = " << pt3.x << "   y = " << pt3.y << std::endl;
-    //std::cout << "pt4: x = " << pt4.x << "   y = " << pt4.y << std::endl;
-
-    //Draw the points on the image
-    /* cv::circle(final_edges, pt1, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(final_edges, pt2, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(final_edges, pt3, 10, cv::Scalar(0, 0, 255), 5);
-    cv::circle(final_edges, pt4, 10, cv::Scalar(0, 0, 255), 5); */
     std::vector<cv::Point2f> vertices = {pt1, pt2, pt3, pt4};
 
-    std::cout << "PT1: x = " << pt1.x << "  y = " << pt1.y << std::endl;
-    std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
-    std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
-    std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
-    
-    //Check the input mask to the GrabCut algorithm
-    /* cv::fillPoly(final_edges, vertices, cv::Scalar(0, 50, 200));
-    cv::imshow("Final corners with Roi", final_edges);
-    cv::waitKey(0);
-
-    std::cout << "Now we begin GrabCut, don't press anything, just wait... " << std::endl;
-    //Grabcut algorithm for foreground segmentation
-    cv::Mat bgdModel, fgdModel;
-    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
-    cv::fillPoly(mask, vertices, cv::Scalar(cv::GC_PR_FGD));
-    grabCut(image, mask, cv::Rect(), bgdModel, fgdModel, 10, cv::GC_INIT_WITH_MASK);
-    std::cout << "Grabcut executed " << std::endl;
-    // Convert mask to binary mask where foreground is 1 and background is 0
-    cv::Mat binaryMask;
-    compare(mask, cv::GC_PR_FGD, binaryMask, cv::CMP_EQ);
-    binaryMask = binaryMask & 1;
-    // Create the foreground image using the binary mask
-    cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
-    image.copyTo(foreground, binaryMask);
-    cv::imshow("Foreground Image", foreground); */
-
-    //cv::Mat hsv, maskera;
-    //cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
-    //cv::inRange(foreground, (36, 25, 25), (70, 255,255), maskera);
-    //showImage(maskera, "Out inRange");
-    //cv::Mat segmented = computeMask(foreground);
-    //showImage(segmented, "Boh");
+    // std::cout << "PT1: x = " << pt1.x << "  y = " << pt1.y << std::endl;
+    // std::cout << "PT2: x = " << pt2.x << "  y = " << pt2.y << std::endl;
+    // std::cout << "PT3: x = " << pt3.x << "  y = " << pt3.y << std::endl;
+    // std::cout << "PT4: x = " << pt4.x << "  y = " << pt4.y << std::endl;
 
     std::cout << "Table Detection OK" << std::endl;
     
     return vertices;
 }
 
-std::tuple<float, float> splitHorVertLines(std::vector<cv::Vec2f> lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines ){
+
+// SPLIT LINES IN HORIZONTAL AND VERTICAL 
+
+std::tuple<float, float> splitHorVertLines(const std::vector<cv::Vec2f> &lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines ){
     
+    // Upper and lower thresholds to detect horizontal lines
+    const double low_threshold_horizontal_1 = CV_PI / 2.5;
+    const double up_threshold_horizontal_1 = 3 * CV_PI / 4;
+    const double low_threshold_horizontal_2 = 5 * CV_PI / 4;
+    const double up_threshold_horizontal_2 = 7 * CV_PI / 4;
+
+    //Upper and lower thresholds to detect vertical lines
+    const double low_threshold_vertical_1 = 0;
+    const double up_threshold_vertical_1 = CV_PI / 2.5;
+    const double low_threshold_vertical_2 = 7 * CV_PI / 4;
+    const double up_threshold_vertical_2 = 2 * CV_PI;
+    const double low_threshold_vertical_3 = 3 * CV_PI / 4;
+    const double up_threshold_vertical_3 = 5 * CV_PI / 4;
+
+    // Define sums and mean variables to store results
     float sumRhoVert = 0, sumRhoHoriz = 0, meanVert = 0, meanHoriz = 0;
+
+    // Iterate along all the lines received as input
     for (size_t i = 0; i < lines.size(); i++) {
+
+        // Assign theta value of the current line 
         float theta = lines[i][1];      
-        if ((theta >= CV_PI / 2.5 && theta <= 3 * CV_PI / 4) || (theta >= 5 * CV_PI / 4 && theta <= 7 * CV_PI / 4)) {
-            // Horizontal lines
+
+        // Split lines in horizontal and vertical based on the value of theta
+        // Horizontal lines
+        if ((theta >= low_threshold_horizontal_1 && theta <= up_threshold_horizontal_1) || (theta >= low_threshold_horizontal_2 && theta <= up_threshold_horizontal_2)) {
+            // Add the current line to the vector of horizontal lines and accumulate the sum of Rho values
             horizontalLines.push_back(lines[i]);
             sumRhoHoriz += lines[i][0];
-        } else if ((theta >= 0 && theta <= CV_PI / 2.5) || (theta >= 7 * CV_PI / 4 && theta <= 2 * CV_PI) || 
-                   (theta >= 3 * CV_PI / 4 && theta <= 5 * CV_PI / 4)) {
-            // Vertical lines
+        } 
+        
+        // Vertical lines
+        else if ((theta >= low_threshold_vertical_1 && theta <= up_threshold_vertical_1) || (theta >= low_threshold_vertical_2 && theta <= up_threshold_vertical_2) 
+                    || (theta >= low_threshold_vertical_3 && theta <= up_threshold_vertical_3)) {
+            // Add the current line to the vector of horizontal lines and accumulate the sum of Rho values
             verticalLines.push_back(lines[i]);
             sumRhoVert += lines[i][0];
         }
     }
+
+    // Compute mean value of Rho for horizontal and vertical lines
     meanHoriz = sumRhoHoriz / horizontalLines.size();
     meanVert = sumRhoVert / verticalLines.size();
+
+    // Optional for debugging: print on screen the mean values of Rho for horizontal and vertical lines
     //std::cout << "Mean Rho Horiz: " << meanHoriz << "   Mean Rho Vert: " << meanVert << std::endl;
     return std::make_tuple(meanHoriz, meanVert);
 }
 
+
+// DRAW A GROUP OF LINES
+
 static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colour){
-    // Draw the lines
-    for( size_t i = 0; i < lines.size(); i++ )
-        {
+
+    // Iterate along the vector of lines
+    for( size_t i = 0; i < lines.size(); i++ ) {
+        
+        // Extract rho (distance from origin to the line) and theta (angle of the line) from the current line
         float rho = lines[i][0], theta = lines[i][1];
+
+        // Optional for debugging: compute theta in degrees, slope of the line and intercept with y-axis, and print
         float theta_deg = theta * (180/M_PI);
         float slope = -cos(theta)/sin(theta), intercept = rho / sin(theta);
         //std::cout << "Rho: " << rho << "        Theta: " << theta << std::endl;
         //std::cout << "Slope: " << slope << "        Intercept: " << intercept << std::endl;
+        
+        // Define two points to represent the line 
         cv::Point2f pt1, pt2;
-        double a = cos(theta), b = sin(theta);
-        double x0 = a*rho, y0 = b*rho;
-        pt1.x = cvRound(x0 + 1000*(-b));
-        pt1.y = cvRound(y0 + 1000*(a));
-        pt2.x = cvRound(x0 - 1000*(-b));
-        pt2.y = cvRound(y0 - 1000*(a));
-        line( img, pt1, pt2, colour, 3, cv::LINE_AA);
+        double a = cos(theta), b = sin(theta); 
+        double x0 = a * rho, y0 = b * rho;   
+        
+        // Compute x and y coordinates of the first and second point
+        pt1.x = cvRound(x0 + 1000 * (-b));     
+        pt1.y = cvRound(y0 + 1000 * (a));      
+        pt2.x = cvRound(x0 - 1000 * (-b));     
+        pt2.y = cvRound(y0 - 1000 * (a));     
+
+        // Write the line that connects the two points on the image
+        cv::line( img, pt1, pt2, colour, 3, cv::LINE_AA);
         }
-    cv::imshow("Detected Lines (in red)", img);
+
+    // Show the image
+    cv::imshow("Detected Lines ", img);
     cv::waitKey(0);
 }
 
+
+
 static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour){
-    // Draw the lines
+    
+    // Extract rho (distance from origin to the line) and theta (angle of the line) from the current line
     float rho = lines[0], theta = lines[1];
+
+    // Optional for debugging: compute theta in degrees, slope of the line and intercept with y-axis, and print
     float theta_deg = theta * (180/M_PI);
     float slope = -cos(theta)/sin(theta), intercept = rho / sin(theta);
     //std::cout << "Rho: " << rho << "        Theta: " << theta_deg << std::endl;
     //std::cout << "Slope: " << slope << "        Intercept: " << intercept << std::endl;
+
+    // Define two points to represent the line 
     cv::Point2f pt1, pt2;
     double a = cos(theta), b = sin(theta);
     double x0 = a*rho, y0 = b*rho;
+
+    // Compute x and y coordinates of the first and second point
     pt1.x = cvRound(x0 + 1000*(-b));
     pt1.y = cvRound(y0 + 1000*(a));
     pt2.x = cvRound(x0 - 1000*(-b));
     pt2.y = cvRound(y0 - 1000*(a));
-    line( img, pt1, pt2, colour, 3, cv::LINE_AA);
+
+    // Write the line that connects the two points on the image
+    cv::line( img, pt1, pt2, colour, 3, cv::LINE_AA);
     cv::imshow("Draw single line", img);
     cv::waitKey(0);
 }
 
 std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>> findGroupOfLines(std::vector<cv::Vec2f> horizontalLine, std::vector<cv::Vec2f> verticalLine, float meanVert, float meanHoriz) {
     
+    // Define vectors to store the four lines
     std::vector<cv::Vec2f> topHoriz, lowHoriz, leftVert, rightVert;
     float lastTheta, lastRho;
     float meanRhoTop = 0, meanRhoLow = 0, meanRhoLeft = 0, meanRhoRight = 0;
