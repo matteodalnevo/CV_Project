@@ -12,7 +12,7 @@
 /**
  * @brief Represents a bounding box with an ID
  * 
- * This struct defines a bounding box with its position, sizeand an ID.
+ * This struct defines a bounding box with its position, sizeand an ID
  */
 struct BoundingBox {
     cv::Rect box; // The bounding box defined by a cv::Rect
@@ -86,5 +86,18 @@ void plotBBox(cv::Mat& image, BoundingBox& bbox);
  * 
  */
 void outputBBImage(cv::Mat& image, std::vector<cv::Point2f> vertices, std::vector<BoundingBox> classified_boxes);
+
+/**
+ * @brief Segments an image by filling a polygon area with a specific color and drawing circles
+ *        at the center of classified bounding boxes. It also applies a hand mask to blend the result
+ * 
+ * @param img The input image to be segmented
+ * @param footage_corners The vector of points defining the corners of the polygon to be filled
+ * @param classified_boxes The vector of BoundingBox objects representing classified objects
+ * @param hand_mask The mask image representing the areas to be removed
+ * @return The segmented image with the polygon area filled and circles drawn, blended using the hand mask
+ */
+cv::Mat segmentation(const cv::Mat img, const std::vector<cv::Point2f> footage_corners, const std::vector<BoundingBox> classified_boxes, cv::Mat hand_mask);
+
 
 #endif // UTILS_H

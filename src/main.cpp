@@ -18,62 +18,6 @@
 #include <sstream>
 #include <string>
 
-cv::Mat segmentation(const cv::Mat img, const std::vector<cv::Point2f> footage_corners, const std::vector<BoundingBox> classified_boxes, cv::Mat hand_mask) {
-    // Create a black image of the same size as input image
-    cv::Mat dark_image = cv::Mat::zeros(img.size(), CV_8UC1);
-
-    // Create a mask with the same size as the image, initialized to black
-    cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
-
-    // Convert the vector of points to a vector of cv::Point for fillPoly
-    std::vector<cv::Point> polygon_points(footage_corners.begin(), footage_corners.end());
-
-    // Fill the polygon area on the mask with white color (255)
-    cv::fillPoly(mask, std::vector<std::vector<cv::Point>>{polygon_points}, cv::Scalar(255));
-
-    // Create the green color
-    cv::Scalar field_color(5); // BGR format
-
-    // Fill the area inside the polygon in the dark image with green color
-    dark_image.setTo(field_color, mask);
-
-    // Draw circles centered in the bounding boxes
-    for (const auto& box : classified_boxes) {
-        // Calculate the center of the bounding box
-        cv::Point center(box.box.x + box.box.width / 2, box.box.y + box.box.height / 2);
-
-        // Calculate the radius as half of the smaller dimension (width or height)
-        int radius = std::min(box.box.width, box.box.height) / 2;
-
-        // Create the color of the ball
-        cv::Scalar ball_color = box.ID;
-
-        // Draw the circle on the dark image
-        cv::circle(dark_image, center, radius, ball_color, -1); // -1 to fill the circle
-    }
-
-    // Ensure hand_mask is single-channel and same size as dark_image
-    cv::Mat hand_mask_gray;
-    if (hand_mask.channels() == 3) {
-        cv::cvtColor(hand_mask, hand_mask_gray, cv::COLOR_BGR2GRAY);
-    } else {
-        hand_mask_gray = hand_mask;
-    }
-    
-    // Normalize hand_mask to be binary (0 or 255)
-    cv::threshold(hand_mask_gray, hand_mask_gray, 128, 255, cv::THRESH_BINARY);
-
-    // Create a black image of the same size as dark_image
-    cv::Mat black_image = cv::Mat::zeros(dark_image.size(), CV_8UC1);
-
-    // Combine dark_image and black_image using hand_mask
-    cv::Mat final_image;
-    dark_image.copyTo(final_image, hand_mask_gray); // copy the dark_image where hand_mask is white
-    black_image.copyTo(final_image, 255 - hand_mask_gray); // copy the black_image where hand_mask is black
-
-    return final_image;
-}
-
 int main() {
 
     std::vector<std::string> imagePaths = {
@@ -131,16 +75,16 @@ int main() {
         mapGrayscaleMaskToColorImage( segmentation_first, first_col);
         mapGrayscaleMaskToColorImage( segmentation_last, last_col);
 
-        //cv::imshow("segmentation_first", first_col);
-        //cv::imshow("segmentation_last", last_col);
+        cv::imshow("segmentation_first", first_col);
+        cv::imshow("segmentation_last", last_col);
 
         // Output images
-        outputBBImage(frames.front(), footage_corners, classified_boxes_first);
-        outputBBImage(frames.back(), footage_corners, classified_boxes_last);
+        //outputBBImage(frames.front(), footage_corners, classified_boxes_first);
+        //outputBBImage(frames.back(), footage_corners, classified_boxes_last);
 
         // Shows the results
-        showImage(frames.front(),"First Frame");
-        showImage(frames.back(),"Last Frame");
+        //showImage(frames.front(),"First Frame");
+        //showImage(frames.back(),"Last Frame");
 
     
 

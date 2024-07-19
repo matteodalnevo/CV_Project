@@ -19,177 +19,9 @@
 #include <sstream>
 #include <string>
 
-double computeMAPfromStruct(accumulationForAPvalues bigStruct) {
-    std::vector<double> resultsVec;
-
-    resultsVec.push_back(computeAP(bigStruct.ious_class1, bigStruct.totalDetects_class1));
-    resultsVec.push_back(computeAP(bigStruct.ious_class2, bigStruct.totalDetects_class2));
-    resultsVec.push_back(computeAP(bigStruct.ious_class3, bigStruct.totalDetects_class3));
-    resultsVec.push_back(computeAP(bigStruct.ious_class4, bigStruct.totalDetects_class4));
-
-    double sum = std::accumulate(resultsVec.begin(), resultsVec.end(), 0.0); 
-    return (sum / static_cast<double>(resultsVec.size()));
-}
-
-void assignIouForMAP(const vectorsOfIoUStruct IouValsStruct, const groundTruthLengths totalDetections, accumulationForAPvalues &completeStruct) {
-    
-    completeStruct.ious_class1.insert(completeStruct.ious_class1.end(), IouValsStruct.class1.begin(), IouValsStruct.class1.end());
-    completeStruct.ious_class2.insert(completeStruct.ious_class2.end(), IouValsStruct.class2.begin(), IouValsStruct.class2.end());
-    completeStruct.ious_class3.insert(completeStruct.ious_class3.end(), IouValsStruct.class3.begin(), IouValsStruct.class3.end());
-    completeStruct.ious_class4.insert(completeStruct.ious_class4.end(), IouValsStruct.class4.begin(), IouValsStruct.class4.end());
-
-    completeStruct.totalDetects_class1 += totalDetections.class1;
-    completeStruct.totalDetects_class2 += totalDetections.class2;
-    completeStruct.totalDetects_class3 += totalDetections.class3;
-    completeStruct.totalDetects_class4 += totalDetections.class4;
-}
-
-void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector) {
-    iouStructure.class1.push_back(iouVector[0]);
-    iouStructure.class2.push_back(iouVector[1]);
-    iouStructure.class3.push_back(iouVector[2]);
-    
-    if (iouVector[3] != -1) {
-        iouStructure.class4.push_back(iouVector[3]);
-    }
-    if (iouVector[4] != -1 ) {
-        iouStructure.class5.push_back(iouVector[4]);
-    }
-    
-    iouStructure.class6.push_back(iouVector[5]);
-
-}
-
-
-cv::Mat segmentation(const cv::Mat img, const std::vector<cv::Point2f> footage_corners, const std::vector<BoundingBox> classified_boxes, cv::Mat hand_mask) {
-    // Create a black image of the same size as input image
-    cv::Mat dark_image = cv::Mat::zeros(img.size(), CV_8UC1);
-
-    // Create a mask with the same size as the image, initialized to black
-    cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
-
-    // Convert the vector of points to a vector of cv::Point for fillPoly
-    std::vector<cv::Point> polygon_points(footage_corners.begin(), footage_corners.end());
-
-    // Fill the polygon area on the mask with white color (255)
-    cv::fillPoly(mask, std::vector<std::vector<cv::Point>>{polygon_points}, cv::Scalar(255));
-
-    // Create the green color
-    cv::Scalar field_color(5); // BGR format
-
-    // Fill the area inside the polygon in the dark image with green color
-    dark_image.setTo(field_color, mask);
-
-    // Draw circles centered in the bounding boxes
-    for (const auto& box : classified_boxes) {
-        // Calculate the center of the bounding box
-        cv::Point center(box.box.x + box.box.width / 2, box.box.y + box.box.height / 2);
-
-        // Calculate the radius as half of the smaller dimension (width or height)
-        int radius = std::min(box.box.width, box.box.height) / 2;
-
-        // Create the color of the ball
-        cv::Scalar ball_color = box.ID;
-
-        // Draw the circle on the dark image
-        cv::circle(dark_image, center, radius, ball_color, -1); // -1 to fill the circle
-    }
-
-    // Ensure hand_mask is single-channel and same size as dark_image
-    cv::Mat hand_mask_gray;
-    if (hand_mask.channels() == 3) {
-        cv::cvtColor(hand_mask, hand_mask_gray, cv::COLOR_BGR2GRAY);
-    } else {
-        hand_mask_gray = hand_mask;
-    }
-    
-    // Normalize hand_mask to be binary (0 or 255)
-    cv::threshold(hand_mask_gray, hand_mask_gray, 128, 255, cv::THRESH_BINARY);
-
-    // Create a black image of the same size as dark_image
-    cv::Mat black_image = cv::Mat::zeros(dark_image.size(), CV_8UC1);
-
-    // Combine dark_image and black_image using hand_mask
-    cv::Mat final_image;
-    dark_image.copyTo(final_image, hand_mask_gray); // copy the dark_image where hand_mask is white
-    black_image.copyTo(final_image, 255 - hand_mask_gray); // copy the black_image where hand_mask is black
-
-    return final_image;
-}
-
-cv::Vec3b computeMedianColor(const cv::Mat& image) {
-    std::vector<uchar> blue, green, red;
-
-    // Extract pixel values for each channel, excluding black pixels ([0, 0, 0])
-    for (int row = 0; row < image.rows; ++row) {
-        for (int col = 0; col < image.cols; ++col) {
-            cv::Vec3b bgr = image.at<cv::Vec3b>(row, col);
-            if (bgr != cv::Vec3b(0, 0, 0)) { // Skip black pixels
-                blue.push_back(bgr[0]);
-                green.push_back(bgr[1]);
-                red.push_back(bgr[2]);
-            }
-        }
-    }
-
-    // Function to find median of a vector
-    auto findMedian = [](std::vector<uchar>& channel) -> uchar {
-        size_t n = channel.size();
-        std::sort(channel.begin(), channel.end());
-        if (n % 2 == 0) {
-            return (channel[n / 2 - 1] + channel[n / 2]) / 2;
-        } else {
-            return channel[n / 2];
-        }
-    };
-
-    // Compute the median for each channel
-    uchar medianBlue = findMedian(blue);
-    uchar medianGreen = findMedian(green);
-    uchar medianRed = findMedian(red);
-
-    return cv::Vec3b(medianBlue, medianGreen, medianRed);
-}
-
-cv::Vec3b ROItable(const cv::Mat& image, std::vector<cv::Point2f> vertices) {
-
-    // Make a copy of the input image to draw the rectangle on
-    cv::Mat result = image.clone();
-    
-    std::vector<cv::Point> points;
-    for (const auto& vertex : vertices) {
-        points.push_back(cv::Point(static_cast<int>(vertex.x), static_cast<int>(vertex.y)));
-    }
-
-    // Draw the quadrilateral by connecting the vertices
-    std::vector<std::vector<cv::Point>> contours;
-    contours.push_back(points);
-    cv::polylines(result, contours, true, cv::Scalar(0, 255, 255), 2); // Yellow color with thickness 2
-
-    //cv::imshow("Table Contours", result);
-
-    // CUT THE ORIGINAL IMAGE
-
-    // Create a mask for the ROI
-    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Initialize mask with zeros (black)
-
-    // Fill the ROI (region of interest) defined by the vertices with white color (255)
-    cv::fillPoly(mask, contours, cv::Scalar(255));
-
-    // Create a masked image using the original image and the mask
-    cv::Mat maskedImage;
-    image.copyTo(maskedImage, mask);
-    
-    
-    cv::Vec3b tableColor = computeMedianColor(maskedImage);
-    
-    //std::cout << "BGR: " << tableColor[0] << " " << tableColor[1] << " " << tableColor[2] << " " << std::endl;
-    
-    return tableColor;
-}
-
 int main() {
 
+    // List of paths for video clips
     std::vector<std::string> imagePaths = {
         "../data/game1_clip1/game1_clip1.mp4",
         "../data/game1_clip2/game1_clip2.mp4",
@@ -203,6 +35,7 @@ int main() {
         "../data/game4_clip2/game4_clip2.mp4"
     };
 
+    // List of paths for masks of first frames
     std::vector<std::string> groundTruthFirstPaths = {
         "../data/game1_clip1/masks/frame_first.png",
         "../data/game1_clip2/masks/frame_first.png",
@@ -216,6 +49,7 @@ int main() {
         "../data/game4_clip2/masks/frame_first.png"
     };
 
+    // List of paths for masks of last frames
     std::vector<std::string> groundTrutLastPaths = {
         "../data/game1_clip1/masks/frame_last.png",
         "../data/game1_clip2/masks/frame_last.png",
@@ -229,6 +63,7 @@ int main() {
         "../data/game4_clip2/masks/frame_last.png"
     };
 
+    // List of paths for the boxes of first frames
     std::vector<std::string> boxesFirstFramePaths = {
         "../data/game1_clip1/bounding_boxes/frame_first_bbox.txt",
         "../data/game1_clip2/bounding_boxes/frame_first_bbox.txt",
@@ -242,6 +77,7 @@ int main() {
         "../data/game4_clip2/bounding_boxes/frame_first_bbox.txt"
     };
 
+    // List of paths for the boxes of first frames
     std::vector<std::string> boxesLastFramePaths = {
         "../data/game1_clip1/bounding_boxes/frame_last_bbox.txt",
         "../data/game1_clip2/bounding_boxes/frame_last_bbox.txt",
@@ -257,7 +93,6 @@ int main() {
 
 //Vectors that store the complete list of IoU values from the segmented images
 performanceMIou iouAccumulator;
-accumulationForAPvalues structOfTotalIoUaccumulation;
 std::vector<double> segmentationPerformance_class1; 
 std::vector<double> segmentationPerformance_class2;
 std::vector<double> segmentationPerformance_class3;
@@ -274,6 +109,7 @@ std::vector<double> globalMAPaccumulator_class4;
 //Accumulator of number of total ground truth objects for each class
 int totalObjects_class1 = 0, totalObjects_class2 = 0, totalObjects_class3 = 0, totalObjects_class4 = 0;
 
+// Iteration along each image of the whole dataset
 for (int i = 0; i < imagePaths.size(); ++i) {
 
         // Here we have the conversion into frames FRAMES ORIGINAL
@@ -286,19 +122,17 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         std::vector<cv::Vec2f> first_detected_lines;
         std::tie(result_first, first_detected_lines) = preProcess(frames.front());
 
-        // Table Corners
+        // Obtain Table Corners
         std::vector<cv::Point2f> footage_corners;
         footage_corners = tableDetection(first_detected_lines);
 
-        // Color Table
-        cv::Vec3b tableColor = ROItable(frames.front(), footage_corners);
-
+        // Define vectors and images where to store output of balls & hand detection
         std::vector<cv::Rect> bboxes_first;
         std::vector<cv::Rect> bboxes_last;
-
         cv::Mat hand_first;
         cv::Mat hand_last;
         
+        // Execute balls and hand detection and store outputs
         std::tie(bboxes_first, hand_first) = ballsHandDetection(frames.front(), footage_corners);
         std::tie(bboxes_last, hand_last) = ballsHandDetection(frames.back(), footage_corners);
 
@@ -342,7 +176,9 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         std::vector<double> IoU_first = segmentationIoU(segmentation_gt_first, segmentation_first);
         std::vector<double> IoU_last = segmentationIoU(segmentation_gt_last, segmentation_last);
 
-        //Print the values of IoU for each class of the first and last frame of the current clip
+        
+
+        // Optional for debugging: Print the values of IoU for each class of the first and last frame of the current clip
         // std::cout << "Segmentation IoU vector for first image " << std::endl;
         // for(int z = 0; z < IoU_first.size(); ++z) {
         //     std::cout << "  " << IoU_first[z];
@@ -373,7 +209,6 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         std::tie(IoUtotals, lengthTotals) = computeVectorsOfIoU(groundTruthBoxesFirst, classified_boxes_first);
 
         //Accumulate the values for a single image on the complete vector for the first frame
-        assignIouForMAP(IoUtotals, lengthTotals, structOfTotalIoUaccumulation);
         globalMAPaccumulator_class1.insert(globalMAPaccumulator_class1.end(), IoUtotals.class1.begin(), IoUtotals.class1.end());
         globalMAPaccumulator_class2.insert(globalMAPaccumulator_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
         globalMAPaccumulator_class3.insert(globalMAPaccumulator_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
@@ -387,7 +222,6 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         //Compute the IoU vectors for all the detections of the first frame
         std::tie(IoUtotals, lengthTotals) = computeVectorsOfIoU(groundTruthBoxesLast, classified_boxes_last);
         //Accumulate the values for a single image on the complete vector for the first frame
-        assignIouForMAP(IoUtotals, lengthTotals, structOfTotalIoUaccumulation);
         globalMAPaccumulator_class1.insert(globalMAPaccumulator_class1.end(), IoUtotals.class1.begin(), IoUtotals.class1.end());
         globalMAPaccumulator_class2.insert(globalMAPaccumulator_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
         globalMAPaccumulator_class3.insert(globalMAPaccumulator_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
@@ -410,18 +244,10 @@ for (int i = 0; i < imagePaths.size(); ++i) {
     vectorOfAP.push_back(computeAP(globalMAPaccumulator_class3, totalObjects_class3));
     vectorOfAP.push_back(computeAP(globalMAPaccumulator_class4, totalObjects_class4));
     double sumOfAP = std::accumulate(vectorOfAP.begin(), vectorOfAP.end(), 0.0);
-    double mAP_ugly = sumOfAP / vectorOfAP.size();
-    double mAP = computeMAPfromStruct(structOfTotalIoUaccumulation);
+    double mAP = sumOfAP / vectorOfAP.size();
 
     //Print on screen the final performance measure
-    std::cout << "mAP on the whole dataset is " << mAP << "     The ugly value is " << mAP_ugly << std::endl;
-
-    // std::cout << "Final IoU values for class 4: solid ball" << std::endl;
-    // for(int k = 0; k < iouAccumulator.class4.size(); ++k) {
-    //     std::cout << iouAccumulator.class4[k] << "      ";
-    // }
-    // std::cout << std::endl;
-    //Computation of final value of mean IoU
+    std::cout << "mAP on the whole dataset is " << mAP << std::endl;
 
     //Computation of the mean Intersection over Union on the whole dataset
     double final_mIoU = finalMIou(iouAccumulator);

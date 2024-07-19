@@ -434,3 +434,19 @@ double finalMIou(const performanceMIou &iouStructure) {
 
     return final_perf;
 }
+
+void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector) {
+    iouStructure.class1.push_back(iouVector[0]);
+    iouStructure.class2.push_back(iouVector[1]);
+    iouStructure.class3.push_back(iouVector[2]);
+    
+    if (iouVector[3] != -1) {
+        iouStructure.class4.push_back(iouVector[3]);
+    }
+    if (iouVector[4] != -1 ) {
+        iouStructure.class5.push_back(iouVector[4]);
+    }
+    
+    iouStructure.class6.push_back(iouVector[5]);
+
+}

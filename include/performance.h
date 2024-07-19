@@ -140,10 +140,6 @@ std::tuple<vectorsOfIoUStruct, groundTruthLengths> computeVectorsOfIoU(const std
  */
 double finalMIou(const performanceMIou &iouStructure);
 
-void assignIouForMAP(const vectorsOfIoUStruct IouValsStruct, const groundTruthLengths totalDetections, accumulationForAPvalues &completeStruct);
-
-double computeMAPfromStruct(accumulationForAPvalues bigStruct);
-
 //Insert the new values of IoU into the structure that stores all the IoU Values for all the classes
 void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector);
 
