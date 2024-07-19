@@ -5,6 +5,7 @@
 
 
 // BALL_READ_DATA_FROM_INPUT
+
 void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vector<cv::Rect>& balls_footage, std::vector<int>& color) {
     const int augmentation = 12; // The offset to apply to the corner of bounding box to move it away from the ball
     
@@ -22,6 +23,7 @@ void BALLreadDataFromInput(std::vector<BoundingBox> classified_boxes, std::vecto
 
 
 // TABLE_READ_DATA_FROM_FILE 
+
 void TABLEreadPointsFromFile(const std::string& corner_txt, std::vector<cv::Point2f>& points) {
     
     // Read and the corners of the scheme table saved in a txt file 
@@ -44,6 +46,7 @@ void TABLEreadPointsFromFile(const std::string& corner_txt, std::vector<cv::Poin
 
 
 // CHECK_MOVED_BALLS
+
 bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, const int tolerance) {
 
     // Check if the difference between two rectangle is higher than a tollerance value that identify the possible motion of the bounding box of a ball 
@@ -54,6 +57,7 @@ bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, const int t
 
 
 // VIDEO_TO_FRAMES
+
 std::tuple<std::vector<cv::Mat>,const double> videoToFrames(const std::string& video_full_path) {
     
     // Load the video from the path
@@ -92,6 +96,7 @@ std::tuple<std::vector<cv::Mat>,const double> videoToFrames(const std::string& v
 
 
 // FRAMES_TO_VIDEO
+
 void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& output_filename, const double fps) {
     
     // Check if the frames vector is empty or not 
@@ -126,6 +131,7 @@ void framesToVideo(const std::vector<cv::Mat>& video_frames, const std::string& 
 
 
 // BEST_HOMOG
+
 cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<cv::Point2f> scheme_table_corners) {
     // Compute 4 different homografy matricies w.r.t. rotated corners, two was enough however some noise could happened and ruin the results 
     cv::Mat H1 = cv::findHomography(footage_table_corners, scheme_table_corners); // Calculate the first homography matrix
@@ -161,6 +167,7 @@ cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<c
 
 
 // DRAW_TRAJECTORY
+
 void drawTrajectory(cv::Mat& image, const std::vector<cv::Point2f>& trajectory, int color) {
     
     // Playable limit space in the table scheme image
@@ -208,6 +215,7 @@ void drawTrajectory(cv::Mat& image, const std::vector<cv::Point2f>& trajectory, 
 
 
 // DRAW_MOVING_BALL
+
 void drawMovingBall(cv::Mat& image, const std::vector<std::vector<cv::Point2f>>& trajectories_scheme, const std::vector<int>& color, int i, int j) {
 	
     // First it is drawn a black circled area, than on top of that a smaller colored circled area, so we can obtain a black contour
@@ -241,6 +249,7 @@ void drawMovingBall(cv::Mat& image, const std::vector<std::vector<cv::Point2f>>&
 
 
 // DRAW_STATIC_BALL
+
 void drawStaticBalls(cv::Mat& image, const std::vector<cv::Point2f>& centers_scheme, const std::vector<int>& color_just_draw) {
 
     // First it is drawn a black circled area, than on top of that a smaller colored circled area, so we can obtain a black contour
@@ -276,6 +285,7 @@ void drawStaticBalls(cv::Mat& image, const std::vector<cv::Point2f>& centers_sch
 
 
 // HSV_PREPROCESSING 
+
 void HSV_preprocessing(const std::vector<cv::Mat>& video_frames, std::vector<cv::Mat>& processed_frames) {
     
     // Preporocess to highlight the balls, it is computed for all the frames    
@@ -312,6 +322,7 @@ void HSV_preprocessing(const std::vector<cv::Mat>& video_frames, std::vector<cv:
 
 
 // IDENTIFY_MOVED_BALLS
+
 void identifyMovedBalls(const std::vector<cv::Rect>& balls_footage_first,
                           const std::vector<cv::Rect>& balls_footage_last,
                           const std::vector<int>& color_first,
@@ -365,6 +376,7 @@ void identifyMovedBalls(const std::vector<cv::Rect>& balls_footage_first,
 
 
 // RESIZE_AND_COPY_TO_FRAME
+
 void resizeAndCopyToFrame(cv::Mat& table_scheme_mod, const cv::Mat& footage_homography, std::vector<cv::Mat>& cloned_video_frames, int j) {
     
     // Calculate new height based on footage_homography.rows
@@ -387,6 +399,7 @@ void resizeAndCopyToFrame(cv::Mat& table_scheme_mod, const cv::Mat& footage_homo
 
 
 // HOMOGRAPHY_TRACK_BALLS MAIN FUNCTION 
+
 std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, std::vector<cv::Point2f> footage_table_corners, std::vector<BoundingBox> classified_boxes_first, std::vector<BoundingBox> classified_boxes_last ) {
     
     // Constant Parameter identifying the coordinate of the PLAYABLE in the scheme image
