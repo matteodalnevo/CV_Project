@@ -1,0 +1,1 @@
+Videos created during the execution of the main file will be stored in this folder
