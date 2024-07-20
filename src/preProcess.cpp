@@ -131,7 +131,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     // Compute the clusterized image
     cv::Mat clusteredImage = visualizeClusters(image, labels, centers);
 
-    // Display the color in a 100x100 box
+    // Create the color in a 100x100 box, printable for debugging
     cv::Mat colorDisplay(100, 100, CV_8UC3, secondLargestColor);
 
     // Create a mask of the table based on the detected color
