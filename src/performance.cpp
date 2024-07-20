@@ -400,10 +400,17 @@ std::vector<double> singleClassVectorIoU(const std::vector<BoundingBox> &groundT
     // Fake class ID in order to detect a class with no prediction
     const int fake_id = 7;
 
-    // If the vector has this fake classification, return IoU = -1 that will be skipped during the AP computation
-    if((myGuess.size() == 1) && (myGuess[0].ID == fake_id)) {
-        const std::vector<double> fake_val = {-1};
-        return fake_val;
+    // If the vector has this fake classification, and no ground truth boxes for this class
+    // return IoU = -1 that will be skipped during the AP computation
+    if((myGuess.size() == 1) && (myGuess[0].ID == fake_id) && (groundTruth.size() == 1) && (groundTruth[0].ID == fake_id)) {
+        const std::vector<double> true_negative = {-1};
+        return true_negative;
+    }
+
+    // If no predicted boxes, but ground truth boxes exist, then IoU = 0
+    if((myGuess.size() == 1) && (myGuess[0].ID == fake_id) && (groundTruth[0].ID != fake_id)) {
+        const std::vector<double> false_negative(groundTruth.size(), 0);
+        return false_negative;
     }
 
     //Compute the matrix of distances between boxes for a single class

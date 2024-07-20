@@ -253,6 +253,10 @@ for (int i = 0; i < imagePaths.size(); ++i) {
     double sumOfAP = std::accumulate(vectorOfAP.begin(), vectorOfAP.end(), 0.0);
     double mAP = sumOfAP / vectorOfAP.size();
 
+    for(int i = 0; i < vectorOfAP.size(); ++i) {
+        std::cout << "AP on class " << i+1 << ": " << vectorOfAP[i] << std::endl;
+    }
+
     //Print on screen the final performance measure
     std::cout << "mAP on the whole dataset is " << mAP << std::endl;
 
