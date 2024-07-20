@@ -265,14 +265,7 @@ cv::Vec2f findMediumLine(const std::vector<cv::Vec2f> &lineVector) {
 
 static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right) {
         if (left[0] <= 0) {
-        float temp1;
-        temp1 = right[0];
-        right[0] = left[0];
-        left[0] = temp1;
-
-        temp1 = right[1];
-        right[1] = left[1];
-        left[1] = temp1;
+        std::swap(left, right);
     }
 }
 

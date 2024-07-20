@@ -19,8 +19,9 @@ double calculateWhitePixelPercentage(const cv::Mat& image, const int threshold) 
     cv::Mat binary;
     cv::threshold(gray, binary, threshold, 255, cv::THRESH_BINARY);
 
-    //cv::imshow("bin", binary);
-    //cv::waitKey(0);
+    // Optional for debugging
+    // cv::imshow("bin", binary);
+    // cv::waitKey(0);
 
     // Count the white pixels
     int whitePixelCount = cv::countNonZero(binary);
@@ -48,9 +49,10 @@ double calculateBlackPixelPercentage(const cv::Mat& image, const int threshold) 
     cv::Mat binary;
     cv::threshold(gray, binary, threshold, 255, cv::THRESH_BINARY_INV); // Adjust the threshold value if needed
 
-    //cv::imshow("gray", gray);
-    //showImage(binary, "bin");
-    //cv::waitKey(0);
+    // Optional for debugging
+    // cv::imshow("gray", gray);
+    // showImage(binary, "bin");
+    // cv::waitKey(0);
 
     // Count the black pixels (which are white in the binary image)
     int blackPixelCount = cv::countNonZero(binary);
