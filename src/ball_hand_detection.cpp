@@ -1,15 +1,19 @@
 // Panizzo Marco
 
 #include "ball_hand_detection.h"
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <set>
-#include <vector>
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <numeric>
 #include <cmath>
+#include <set>
 
 // MEDIAN_COLOR
 

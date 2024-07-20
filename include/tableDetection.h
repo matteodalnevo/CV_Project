@@ -3,8 +3,7 @@
 #ifndef TABLEDETECTION_H
 #define TABLEDETECTION_H
 
-#include <opencv2/opencv.hpp>
-#include <string>
+#include <opencv2/highgui.hpp>
 #include <vector>
 #include <tuple>
 

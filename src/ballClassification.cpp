@@ -1,8 +1,17 @@
 // DAL NEVO MATTEO - ID: 2087919
 
 #include "ballClassification.h"
-#include <iostream>
 #include "utils.h"
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
+#include <vector>
+
+
 
 // Function to calculate the percentage of white pixels in an image
 double calculateWhitePixelPercentage(const cv::Mat& image, const int threshold) {
@@ -19,9 +28,9 @@ double calculateWhitePixelPercentage(const cv::Mat& image, const int threshold) 
     cv::Mat binary;
     cv::threshold(gray, binary, threshold, 255, cv::THRESH_BINARY);
 
-    // Optional for debugging
-    // cv::imshow("bin", binary);
-    // cv::waitKey(0);
+    // Optional image for debugging
+    //cv::imshow("bin", binary);
+    //cv::waitKey(0);
 
     // Count the white pixels
     int whitePixelCount = cv::countNonZero(binary);
@@ -49,10 +58,10 @@ double calculateBlackPixelPercentage(const cv::Mat& image, const int threshold) 
     cv::Mat binary;
     cv::threshold(gray, binary, threshold, 255, cv::THRESH_BINARY_INV); // Adjust the threshold value if needed
 
-    // Optional for debugging
-    // cv::imshow("gray", gray);
-    // showImage(binary, "bin");
-    // cv::waitKey(0);
+    // Optional image for debugging
+    //cv::imshow("gray", gray);
+    //showImage(binary, "bin");
+    //cv::waitKey(0);
 
     // Count the black pixels (which are white in the binary image)
     int blackPixelCount = cv::countNonZero(binary);

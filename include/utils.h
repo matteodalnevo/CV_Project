@@ -4,10 +4,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #include <string>
 #include <vector>
-#include <string>
+
 
 /**
  * @brief Represents a bounding box with an ID

@@ -1,30 +1,20 @@
 # CV_Project
 
-The goal of this project is to develop a computer vision system for analyzing video footage of various “Eight Ball” billiard game events.
+How to run the code:
 
-The required computer vision system must provide high-level information about the status of the match (e.g., ball position) for each frame of the video; this high level information should be displayed as a 2D top-view minimap.
+1- Navigate to the empty 'build' folder.
 
-In more detail, for each frame of the input video the system to be developed should be able to:
-1. Recognize and localize all the balls inside the playing field, distinguishing them based on their category (1-the white “cue ball”, 2-the black “8-ball”, 3-balls with solid colors, 4-balls with stripes);
-2. Detect all the main lines (boundaries) of the playing field;
-3. Segment the area inside the playing field boundaries detected in point 2 into the following categories: 1-the white “cue ball”, 2-the black “8-ball”, 3-balls with solid colors, 4-balls with stripes, 5-playing field;
-4. Represent the current state of the game in a 2D top-view visualization map, to be updated at each new frame with the current ball positions and the trajectory of each ball that is moving.
+2- Execute the command 'cmake ..'
 
-# Table of working Hours
+3- Execute the command 'make' 
 
-|          |   Hours  |                                                                      |
-|----------|----------|----------------------------------------------------------------------|
-| Matteo   |    03    | Set up for the project / import the dataset                          |
-|          |    02    | Planning                                                             |
-|          |    02    | Set Up                                                               |
-|          |   01:30  | Hough Cirlce and bounding boxes                                      |
-|          |    02    | Discussions with the prof and creation of the ROI                    |
-|          |    04    | Haar study                                                           |
-|          |    03    | Call                                                                 |
-|          |    02    | TEST HOUGH                                                           |
-|          |    04    | kmeans + tresholding                                                 |
-|          |
-|          |
-|          |
-|          |
-|          |
+4a- Execute the command './main' if you want to iterate through all the provided video clips. This will compute the tracking process, save the output video, and display the output images for each game. To proceed to the next video clip, press any key when prompted.
+
+4b- Execute the command './main ../data/game1_clip1/game1_clip1.mp4' (or any other video file path) if you want to process a single video clip. You need to pass the path to one video file as argument.
+
+4c- Execute the command './performance' if you want to see the system's performance on the entire dataset without visualizing the resulting images and videos.
+
+
+In cases 4a and 4b, the processed videos will be saved in the 'Results_from_processing' folder. The 'Results' folder already contain all the resulting videos and images of an offline processing of each clip done by us.
+
+

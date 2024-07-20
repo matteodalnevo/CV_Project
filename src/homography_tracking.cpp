@@ -3,6 +3,20 @@
 #include "homography_tracking.h"
 #include "utils.h"
 
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/tracking.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <fstream>
+#include <sstream>
+
 
 // BALL_READ_DATA_FROM_INPUT
 
@@ -58,41 +72,59 @@ bool check_moved_balls(const cv::Rect& rect1, const cv::Rect& rect2, const int t
 
 // VIDEO_TO_FRAMES
 
-std::tuple<std::vector<cv::Mat>,const double> videoToFrames(const std::string& video_full_path) {
+std::tuple<std::vector<cv::Mat>, const double> videoToFrames(const std::string& video_full_path) {
     
-    // Load the video from the path
-    cv::VideoCapture video(video_full_path); // Video
+    // For checking the correctness
+    std::ifstream file(video_full_path); 
+    
+    // Check if it is a valid path
+    if (!file.good()) {
 
-    if (!video.isOpened()) { // Check the video availability 
-        std::cerr << "Error while opening the video " << video_full_path <<std::endl;
-        return std::make_tuple(std::vector<cv::Mat>(), 0.0); // Return empty vector and fps 0.0
+        // if it is not return the following error 
+        std::cerr << "Video does not exist: " << video_full_path <<"\n"<< std::endl;
+        return std::make_tuple(std::vector<cv::Mat>(), 0.0);
+    }
+
+    // Load the video from the path
+    cv::VideoCapture video(video_full_path);
+
+    // Check the video availability 
+    if (!video.isOpened()) {
+
+        // if not return the following error
+        std::cerr << "Error while opening the video \n" << video_full_path << std::endl;
+        return std::make_tuple(std::vector<cv::Mat>(), 0.0);
     }
 
     // FPS for future reconstruction from vector of frames
-    const double fps = video.get(cv::CAP_PROP_FPS); 
+    const double fps = video.get(cv::CAP_PROP_FPS);
 
     // Vector where store all the frames
-    std::vector<cv::Mat> frames; // Vector for storing the frames
+    std::vector<cv::Mat> frames;
 
     // Single frame
     cv::Mat frame;
 
     // Load of frames
     while (true) {
-        video >> frame; // Takes one frame at a time
 
-        if (frame.empty()) { // Checks if it reaches the end
+        // Takes one frame at a time
+        video >> frame;
+
+        // Checks if it reaches the end
+        if (frame.empty()) {
             break;
         }
-        
-        frames.push_back(frame.clone()); // Loads the vector with frames
-    }
-    video.release(); // Release the video capture
 
-    // return a tuple containing the frames and the fps
+        // Loads the vector with frames
+        frames.push_back(frame.clone());
+    }
+
+    // Release the video capture
+    video.release();
+
     return std::make_tuple(frames, fps);
 }
-
 
 
 // FRAMES_TO_VIDEO

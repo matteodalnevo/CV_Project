@@ -1,10 +1,16 @@
 // DAL NEVO MATTEO - ID: 2087919
 
 #include "preProcess.h"
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 #include <iostream>
 #include <tuple>
 #include <vector>
-#include <opencv2/opencv.hpp>
 
 // Function to find the color of a specific cluster center
 cv::Scalar findClusterColor(const cv::Mat& centers, int index) {
@@ -131,7 +137,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     // Compute the clusterized image
     cv::Mat clusteredImage = visualizeClusters(image, labels, centers);
 
-    // Create the color in a 100x100 box, printable for debugging
+    // Display the color in a 100x100 box
     cv::Mat colorDisplay(100, 100, CV_8UC3, secondLargestColor);
 
     // Create a mask of the table based on the detected color

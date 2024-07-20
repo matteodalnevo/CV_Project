@@ -4,7 +4,7 @@
 #ifndef PRE_PROCESS_H
 #define PRE_PROCESS_H
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #include <tuple>
 #include <vector>
 

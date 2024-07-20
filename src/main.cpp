@@ -18,45 +18,64 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <boost/filesystem.hpp>
 
 void processVideo(const std::string &videoPath, int index = -1) {
-    std::cout << "\nANALYSING: " << videoPath.substr(8, 11) << std::endl;
+
+
+    std::cout << "\nANALYSING: " << videoPath.substr(videoPath.find_last_of("/\\") + 1) << std::endl;
 
     // Here we have the conversion into frames FRAMES ORIGINAL
     std::vector<cv::Mat> frames;
-    double fps;
-    std::tie(frames, fps) = videoToFrames(videoPath);
 
+    // frames per second 
+    double fps;
+
+    // Compute the function and retrive the frames and the fps
+    std::tie(frames, fps) = videoToFrames(videoPath);
+    
+    // Check if the loading phase of the video succeded (fps should be != from 0)
+    // The error handling is deploied to the videoToFrames function that return an error comment
+    // the following one is just to exit from this function
+    if(fps == 0.0) {
+        return; // error
+    } 
+    
     std::cout << "VIDEO EXTRAPOLATION: DONE" << std::endl;
 
     // PreProcessing Corners
     cv::Mat result_first;
     std::vector<cv::Vec2f> first_detected_lines;
+
+    // Execute the preprocessing on the image and detect a raw group of lines 
     std::tie(result_first, first_detected_lines) = preProcess(frames.front());
 
     // Table Corners
     std::vector<cv::Point2f> footage_corners;
+
+    // Filter the lines provided from the preprocess and find the corners of the table 
     footage_corners = tableDetection(first_detected_lines);
 
     std::cout << "TABLE DETECTION: DONE" << std::endl;
 
-    // Balls Detection and Hand Segmentation
-    std::vector<cv::Rect> bboxes_first;
-    std::vector<cv::Rect> bboxes_last;
+    // Vectors of rect where storing the bboxes of the circles from the detection
+    std::vector<cv::Rect> bboxes_first; // fisrt frame
+    std::vector<cv::Rect> bboxes_last; // last frame
 
-    cv::Mat hand_first;
-    cv::Mat hand_last;
-    
+    // Images where storing the hand segmentation 
+    cv::Mat hand_first; // first frame
+    cv::Mat hand_last; // last frame
+
+    // Balls detection and hand segmentation of first and last frames
     std::tie(bboxes_first, hand_first) = ballsHandDetection(frames.front(), footage_corners);
     std::tie(bboxes_last, hand_last) = ballsHandDetection(frames.back(), footage_corners);
 
     std::cout << "BALLS DETECTION and HAND SEGMENTATION: DONE" << std::endl;
 
-    // Balls Classification
+    // vectors of bounding boxes for the classification
     std::vector<BoundingBox> classified_boxes_first;
     std::vector<BoundingBox> classified_boxes_last;
 
+    // Ball classification for first and last frames
     classified_boxes_first = ballClassification(frames.front(), bboxes_first);
     classified_boxes_last = ballClassification(frames.back(), bboxes_last);
 
@@ -64,15 +83,18 @@ void processVideo(const std::string &videoPath, int index = -1) {
 
     // Creation of the video
     std::vector<cv::Mat> video_frames = homography_track_balls(frames, footage_corners, classified_boxes_first, classified_boxes_last);
-    std::string outputFileName = index >= 0 ? "../execution_results/Result_" + std::to_string(index) + ".mp4" : "../execution_results/Result.mp4";
-    framesToVideo(video_frames, outputFileName, fps); // TO BE USED ON TRACK OUT
+    
+    // Utilization of a Ternary operator to save the video clip  
+    std::string outputFileName = index >= 0 ? "../Results_from_processing/Result_" + std::to_string(index) + ".mp4" : "../Results_from_processing/Result.mp4";
+    framesToVideo(video_frames, outputFileName, fps);
 
     std::cout << "VIDEO SAVING: DONE" << std::endl;
 
-    // Segmentation
+    // Segmentation on the first and last frames
     cv::Mat segmentation_first = segmentation(frames.front(), footage_corners, classified_boxes_first, hand_first);
     cv::Mat segmentation_last = segmentation(frames.back(), footage_corners, classified_boxes_last, hand_last);
 
+    // Mapping of the segmented images to a BGR readable images
     cv::Mat first_col, last_col;
     mapGrayscaleMaskToColorImage(segmentation_first, first_col);
     mapGrayscaleMaskToColorImage(segmentation_last, last_col);
@@ -80,7 +102,7 @@ void processVideo(const std::string &videoPath, int index = -1) {
     std::cout << "SEGMENTATION: DONE" << std::endl;
     std::cout << "END" << std::endl;
 
-    // Output images
+    // Generation of original image with detected table boundaries and balls bounding boxes
     outputBBImage(frames.front(), footage_corners, classified_boxes_first);
     outputBBImage(frames.back(), footage_corners, classified_boxes_last);
 
@@ -108,24 +130,30 @@ int main(int argc, char* argv[]) {
         "../data/game4_clip2/game4_clip2.mp4"
     };
 
-    if (argc > 1) {
-        // Argument provided, process the single video file
-        std::string videoPath = argv[1];
-        
-        if (boost::filesystem::exists(videoPath)) {
-            processVideo(videoPath);
-            cv::waitKey(0);
-        } else {
-            std::cerr << "Error: The file path provided does not exist: " << videoPath << std::endl;
-            return 1; // Exit with an error code
-        }
-    } else {
-        // No argument provided, loop through the predefined list of paths
+    // No argument provided, loop through the predefined list of clips
+    if (argc == 1 ) {
         for (int i = 0; i < imagePaths.size(); ++i) {
+
+            // Overall function that compute al the requested tasks
             processVideo(imagePaths[i], i);
             std::cout << "\nPress any key to proceed to the next clip " << std::endl;
             cv::waitKey(0);
         }
+    }
+
+    // Argument provided, process the single video file
+    if (argc == 2) {
+        std::string videoPath = argv[1];
+        
+        // Overall function that compute al the requested tasks
+        processVideo(videoPath);
+        cv::waitKey(0);
+    } 
+
+    // More arguments provided turn an error
+    else {
+        std::cerr << "Error: you must provide one single argument" << std::endl;
+        return 1;
     }
 
     return 0;

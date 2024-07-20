@@ -3,15 +3,11 @@
 #ifndef BALL_HAND_DETECTION_H
 #define BALL_HAND_DETECTION_H
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #include <iostream>
 #include <set>
 #include <vector>
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <numeric>
-#include <cmath>
+
 
 
 /**

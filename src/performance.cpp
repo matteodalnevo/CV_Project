@@ -1,10 +1,19 @@
 // Prevedello Aaron
 
+
 #include "performance.h"
 #include "utils.h"
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 #include <iostream>
 #include <numeric>
-
+#include <string>
+#include <vector>
 
 // IOU ON SEMGENTED IMAGE
 

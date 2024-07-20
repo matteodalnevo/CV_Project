@@ -4,10 +4,11 @@
 #ifndef BALLCLASSIFICATION_H
 #define BALLCLASSIFICATION_H
 
-#include <opencv2/opencv.hpp>
-#include <string>
-#include <vector>
 #include "utils.h"
+
+#include <opencv2/highgui.hpp>
+#include <vector>
+
 
 /**
  * @brief Calculates the percentage of white pixels in an image
