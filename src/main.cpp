@@ -18,7 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 
 void processVideo(const std::string &videoPath, int index = -1) {
     std::cout << "\nANALYSING: " << videoPath.substr(8, 11) << std::endl;
@@ -64,7 +64,7 @@ void processVideo(const std::string &videoPath, int index = -1) {
 
     // Creation of the video
     std::vector<cv::Mat> video_frames = homography_track_balls(frames, footage_corners, classified_boxes_first, classified_boxes_last);
-    std::string outputFileName = index >= 0 ? "Result_" + std::to_string(index) + ".mp4" : "Result.mp4";
+    std::string outputFileName = index >= 0 ? "../execution_results/Result_" + std::to_string(index) + ".mp4" : "../execution_results/Result.mp4";
     framesToVideo(video_frames, outputFileName, fps); // TO BE USED ON TRACK OUT
 
     std::cout << "VIDEO SAVING: DONE" << std::endl;
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
         // Argument provided, process the single video file
         std::string videoPath = argv[1];
         
-        if (std::filesystem::exists(videoPath)) {
+        if (boost::filesystem::exists(videoPath)) {
             processVideo(videoPath);
             cv::waitKey(0);
         } else {
