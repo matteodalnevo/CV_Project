@@ -18,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 
 void processVideo(const std::string &videoPath, int index = -1) {
     std::cout << "\nANALYSING: " << videoPath.substr(8, 11) << std::endl;
@@ -110,8 +111,14 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         // Argument provided, process the single video file
         std::string videoPath = argv[1];
-        processVideo(videoPath);
-        cv::waitKey(0);
+        
+        if (std::filesystem::exists(videoPath)) {
+            processVideo(videoPath);
+            cv::waitKey(0);
+        } else {
+            std::cerr << "Error: The file path provided does not exist: " << videoPath << std::endl;
+            return 1; // Exit with an error code
+        }
     } else {
         // No argument provided, loop through the predefined list of paths
         for (int i = 0; i < imagePaths.size(); ++i) {

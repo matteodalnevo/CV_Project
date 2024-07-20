@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.5.0)
 # define the project name
 project(Project VERSION 0.1.0)
 
+set(CMAKE_CXX_STANDARD 17)            # Use C++17 standard
+set(CMAKE_CXX_STANDARD_REQUIRED True) # Enforce using C++17
+
 include(CTest)
 enable_testing()
 
