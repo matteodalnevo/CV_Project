@@ -18,29 +18,27 @@
  * determines the median value for each channel and combines them into a single median color.
  *
  * @param image A constant reference to a cv::Mat object representing the input image.
- *              The image is expected to be in BGR format.
+ *              
  * 
  * @return cv::Vec3b A vector of three unsigned characters representing the median color 
- *                   in BGR format.
+ *                   
  */
 cv::Vec3b MedianColor(const cv::Mat& image);
 
 
 /**
- * @brief Computes the median color of a specific quadrilateral region in an image.
+ * @brief Computes the median color of  the table (poligon) in the image.
  * 
- * This function takes an image and a set of vertices defining a quadrilateral region of interest (ROI).
- * It creates a mask to isolate this region, draws the quadrilateral on a copy of the image, and computes 
- * the median color of the pixels within the ROI. The median color is calculated using the `MedianColor` 
+ * This function takes an image and the corners of the table.
+ * It creates a mask to isolate this region, and computes the median color of the 
+ * pixels within the ROI. The median color is calculated using the `MedianColor` 
  * function.
  *
  * @param image A constant reference to a cv::Mat object representing the input image.
- *              The image is expected to be in BGR format.
- * @param vertices A vector of cv::Point2f objects representing the vertices of the quadrilateral 
- *                 region of interest.
- * 
+ *
+ * @param vertices A vector of cv::Point2f objects representing the vertices of the table
  * @return cv::Vec3b A vector of three unsigned characters representing the median color 
- *                   of the specified region in BGR format.
+ *                   
  */
 cv::Vec3b tableColor(const cv::Mat& image, std::vector<cv::Point2f> vertices);
 
@@ -50,7 +48,7 @@ cv::Vec3b tableColor(const cv::Mat& image, std::vector<cv::Point2f> vertices);
  * 
  * This function calculates four different homography matrices by rotating the corners of 
  * the footage table and compares the diagonal stretching components of each matrix to 
- * determine the one with the lowest error. The homography matrix with the smallest error 
+ * determine the one with the lowest stretching (error if we see the cpp code). The homography matrix with the smallest stretching 
  * is returned.
  *
  * @param footage_table_corners A vector of cv::Point2f objects representing the corners 
@@ -58,7 +56,7 @@ cv::Vec3b tableColor(const cv::Mat& image, std::vector<cv::Point2f> vertices);
  * @param scheme_table_corners A vector of cv::Point2f objects representing the corners 
  *                             of the table in the scheme.
  * 
- * @return cv::Mat The homography matrix with the smallest stretching error.
+ * @return cv::Mat The homography matrix with the smallest stretching.
  */
 cv::Mat best_homog_detection(std::vector<cv::Point2f> footage_table_corners, std::vector<cv::Point2f> scheme_table_corners);
 
@@ -66,9 +64,8 @@ cv::Mat best_homog_detection(std::vector<cv::Point2f> footage_table_corners, std
 /**
  * @brief Draws a polygon on an image.
  * 
- * This function takes an image and draws a polygon on it using the specified color and thickness.
- * The polygon is defined by a vector of points. The function ensures that the polygon has at 
- * least 4 points before attempting to draw it.
+ * This function takes an image and draws a polygon on it.
+ * The polygon is defined by a vector of points.
  *
  * @param image A reference to a cv::Mat object representing the image on which the polygon 
  *              will be drawn.
@@ -85,10 +82,7 @@ void drawPolygon(cv::Mat& image, const std::vector<cv::Point2f>& polygon, const 
  * @brief Comparator for cv::Vec3f elements to enable their comparison.
  * 
  * This structure defines a custom comparator for cv::Vec3f elements, allowing 
- * them to be compared based on their components. The comparison is performed 
- * lexicographically: first by the first component, then by the second if the 
- * first components are equal, and finally by the third if the first and second 
- * components are equal.
+ * them to be compared based on their components.
  */
 struct Vec3fComparator {
     bool operator() (const cv::Vec3f& a, const cv::Vec3f& b) const {
@@ -105,13 +99,13 @@ struct Vec3fComparator {
  * This function calculates the Sobel gradient magnitude of a given grayscale image. 
  * It uses the Sobel operator to compute the gradient in both the x and y directions, 
  * normalizes the results, and then combines them to produce the final gradient magnitude 
- * image. The output image highlights edges by representing the gradient magnitude.
+ * image.
  *
  * @param gray A constant reference to a cv::Mat object representing the input grayscale 
- *             image. The image is expected to be in 8-bit single-channel format.
+ *             image.
  * 
  * @return cv::Mat A cv::Mat object representing the gradient magnitude image, with edge 
- *                 information highlighted. The image is in 8-bit single-channel format.
+ *                 information highlighted.
  */
 cv::Mat computeSobel(const cv::Mat& gray);
 
@@ -125,8 +119,7 @@ cv::Mat computeSobel(const cv::Mat& gray);
  * potential circle regions. Gaussian blur is applied to reduce noise before performing 
  * the Hough Circle Transform to detect circles.
  * 
- * @param image A reference to a cv::Mat object representing the input image. The image 
- *              can be in color or grayscale.
+ * @param image A reference to a cv::Mat object representing the input image.
  * @param dp Inverse ratio of the accumulator resolution to the image resolution. A value 
  *           of 1 means the accumulator has the same resolution as the input image.
  * @param minDist Minimum distance between the centers of detected circles. This helps 
@@ -151,15 +144,14 @@ std::vector<cv::Vec3f> detectCircles(cv::Mat& image, const int dp, const int min
  * @brief Draws bounding boxes on an image.
  * 
  * This function draws rectangles around detected objects on the input image. Each rectangle 
- * corresponds to a bounding box provided in the `boundingBoxes` vector. The rectangles are 
- * drawn in red with a specified thickness to highlight the detected regions.
+ * corresponds to a bounding box provided in the `boundingBoxes` vector.
  * 
  * @param image A reference to a cv::Mat object representing the image on which the bounding 
- *              boxes will be drawn. The image will be modified in place.
+ *              boxes will be drawn
  * @param boundingBoxes A constant reference to a vector of cv::Rect objects, where each 
  *                      cv::Rect represents a detected bounding box to be drawn on the image.
  * 
- * @return void This function does not return any value.
+ * @return This function does not return any value.
  */
 void drawBoundingBoxes(cv::Mat& image, const std::vector<cv::Rect>& boundingBoxes);
 
@@ -169,7 +161,7 @@ void drawBoundingBoxes(cv::Mat& image, const std::vector<cv::Rect>& boundingBoxe
  * 
  * This function takes a list of detected circles and merges those that are close to each other 
  * based on a specified radius threshold. It calculates the average center and radius for circles 
- * that are deemed to be overlapping or close, and returns a vector of the merged circles.
+ * that are overlapping or close, and returns a vector of the merged circles.
  * 
  * @param circles A constant reference to a vector of cv::Vec3f objects, each representing 
  *                a detected circle. Each cv::Vec3f contains the (x, y) coordinates of the 
@@ -214,10 +206,6 @@ std::vector<cv::Point2f> loadPolygonVertices(const std::string& filepath);
 
 /**
  * @brief Loads bounding boxes from a file.
- * 
- * This function reads bounding box parameters from a text file and stores them 
- * as `cv::Rect` objects in a vector. Each line in the file should contain the 
- * x, y coordinates, width, and height of a bounding box.
  * 
  * @param filepath The path to the text file containing the bounding box data.
  * 
@@ -306,11 +294,8 @@ double intersectionArea(const cv::Rect& r1, const cv::Rect& r2);
 
 
 /**
- * @brief Computes the smallest bounding box that contains both input rectangles.
- * 
- * This function calculates a bounding box that encompasses both given rectangles by 
- * expanding to include the extents of both. It determines the minimum and maximum x and 
- * y coordinates to create a new rectangle that covers the area of both input rectangles.
+ * @brief Computes the merged bounding box that derive from two initially separete bounding boxes
+ * considered to be merged, the output will be the union of the both (bigger than the single).
  * 
  * @param r1 The first rectangle.
  * @param r2 The second rectangle.
@@ -323,9 +308,8 @@ cv::Rect mergedBoundingBoxes(const cv::Rect& r1, const cv::Rect& r2);
 /**
  * @brief Merges bounding boxes based on proximity and overlap criteria.
  * 
- * This function iterates through a list of bounding boxes and merges those that are close to 
- * each other and meet specified criteria for area similarity and overlap. Bounding boxes are 
- * merged if they are within a certain pixel distance, have area dimensions that are within a 
+ * Bounding boxes are merged if they are within a certain pixel distance,
+ * have area dimensions that are within a 
  * specified ratio, or if they share a significant overlap area.
  * 
  * @param boundingBoxes A vector of bounding boxes to be merged.
@@ -342,14 +326,14 @@ void mergeBoundingBoxes(std::vector<cv::Rect>& boundingBoxes, const int pixeldis
  * This function processes an image to identify hand regions by converting it to HSV color space 
  * and analyzing the saturation channel. A mask is created based on a saturation threshold and 
  * refined using a polygonal area of interest. Bounding boxes that overlap with detected hand regions 
- * are removed from the provided list. The function returns an image with the hand regions highlighted.
+ * are removed from the provided list. The function returns an image with the hand regions in black.
  * 
  * @param bbox Vector of bounding boxes to be filtered.
  * @param image The input image on which filtering is applied.
  * @param areaOfInterest Polygonal region where hand detection is focused.
  * @param threshold_hand Threshold value for saturation to create the mask.
  * 
- * @return An image with hand regions highlighted against a white background.
+ * @return An image with hand regions in black against a white background.
  */
 cv::Mat HandMaskFiltering(std::vector<cv::Rect>& bbox, const cv::Mat& image, const std::vector<cv::Point2f>& areaOfInterest, const double threshold_hand);
 
@@ -361,8 +345,9 @@ cv::Mat HandMaskFiltering(std::vector<cv::Rect>& bbox, const cv::Mat& image, con
  * and applies a series of filtering and merging steps. It also removes detected bounding boxes 
  * that overlap with hand regions, identified via a saturation threshold in the HSV color space. 
  * The function performs the following tasks:
- * - Transforms the image perspective to align with a predefined scheme.
- * - Detects circles using Hough Circle Transform in various color spaces.
+ * - Calculate the homography matrix w.r.t. the table scheme
+ * - Take the table scheme corners of the PLAYABLE FIELD, and compute the inverse homography to find them into the real table
+ * - Detects circles using Hough Circle Transform in various color spaces inside of the PLAYABLE FIELD.
  * - Filters and merges detected circles to create bounding boxes.
  * - Applies a color filter to remove boxes with colors similar to the table.
  * - Filters out bounding boxes that overlap with hand regions.
