@@ -8,7 +8,7 @@
 #include <tuple>
 
 /** @brief Split lines between horizontal and vertical lines, based on theta.
- *  Lines are assumed to be expressed by parameters rho and theta, like output of function cv::HoughLines 
+ *  Lines are assumed to be expressed by parameters rho and theta, like the output of function cv::HoughLines 
  *  @param lines vector of all the lines that must be splitted
  *  @param horizontalLines vector where to insert the horizontal lines founded 
  *  @param verticalLines vector where to insert the vertical lines founded
@@ -17,14 +17,14 @@
 std::tuple<float, float> splitHorVertLines(const std::vector<cv::Vec2f> &lines, std::vector<cv::Vec2f> &horizontalLines, std::vector<cv::Vec2f> &verticalLines );
 
 
-/** @brief Draw a set of lines on the given image wioth the specified color
+/** @brief Draw a set of lines on the given image with the specified color
  *  @param lines lines to be plotted
- *  @param img img where to plot the lines
- *  @param colour colour of the lines
+ *  @param img image where to plot the lines
+ *  @param colour colour of the lines to be plotted
  */
 static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colour);
 
-/** @brief Given horizontal and vertical lines, and their mean values, split into top, bottom, left, right.
+/** @brief Given a two grups of lines, horizontal and vertical, and their mean values, split into top, bottom, left, right.
  * @param horizontalLine vector of horizontal lines to be splitted
  * @param verticalLine vector of vertical lines to be splitted
  * @param meanVert mean value of rho of the group of vertical lines passed
@@ -34,15 +34,15 @@ static void drawLines(std::vector<cv::Vec2f> lines, cv::Mat img, cv::Scalar colo
 std::tuple<std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>, std::vector<cv::Vec2f>> findGroupOfLines(const std::vector<cv::Vec2f> &horizontalLine, const std::vector<cv::Vec2f> &verticalLine,const float meanVert, const float meanHoriz);
 
 
-/** @brief Draw the single line on the given image, you can also choose the color.
- *  @param line line to be plotted
+/** @brief Draw the single line on the given image with specified color.
+ *  @param line single line to be plotted
  *  @param img img where to plot the line
  *  @param colour colour of the line
  */
 static void drawSingleLine(cv::Vec2f lines, cv::Mat img, cv::Scalar colour);
 
-/** @brief Compute the coordinates of the interception between two lines. 
- * Internally compute slope and intercept of the two lines.
+/** @brief Compute the coordinates of the intercept between two lines. 
+ * Internally compute slope and intercept of the two lines. Lines must be expressed by parameters rho and theta
  * @param line1 first line 
  * @param line2 second line
  */
@@ -66,7 +66,7 @@ static void checkLeftRight (cv::Vec2f &left, cv::Vec2f &right);
 
 /** @brief Given a vector of lines, compute the mean value of theta and rho.
  * @param lineVector vector of lines
- * @return Return mean rho and theta 
+ * @return Return mean rho and theta of the representative line
  */
 cv::Vec2f findMediumLine(const std::vector<cv::Vec2f> &lineVector); 
 

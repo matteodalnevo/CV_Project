@@ -8,7 +8,7 @@
 #include "utils.h"
 
 /** @brief Struct containing vector of resulting IoU over all the images, one vector for each class.
- *  Used for accumulating IoU results before computing final mean value 
+ *  Used for accumulating IoU results for segmentation before computing final mean value 
  */
 struct performanceMIou {
     std::vector<double> class1;
@@ -39,7 +39,7 @@ struct vectorsOfIoUStruct {
     std::vector<double> class4;
 };
 
-/** @brief Compute the vector of Intersection over Union values for the six classes on the images
+/** @brief Compute the vector of Intersection over Union values for the six classes on a single image
  * @param groundTruth reference segmented image
  * @param segmentedImg predicted segmented image
  * @return A vector containing six values of IoU, one for each class
@@ -64,18 +64,19 @@ std::vector<double> computeVectorIoUFromPairings(const std::vector<int> pairings
  *  If there are no boxes for the specified class, return a vector with a single dummy box classified with the fake 
  *  id=7, so that it will be discarded later.
  * @param bb vector of bounding boxes to be elaborated
+ * @return a vector of bounding boxes belonging to the single specified class
  */
 std::vector<BoundingBox> splitBbSingleClass(const std::vector<BoundingBox> &bb, const int index);
 
-/** @brief plot a matrix on scree
- * @param matrix matrix to be printed
+/** @brief plot a matrix on screen. Useful for debugging.
+ * @param matrix matrix to be showed
  */
 void printMatrix(const std::vector<std::vector<double>>& matrix); 
 
 /** @brief Compute the euclidean distance between to cv::Point
  * @param a first cv::Point
  * @param b second cv::Point
- * @return double distance between the two points
+ * @return (double) distance between the two points
  */
 double euclideanDist(const cv::Point a,const cv::Point b);
 
@@ -85,24 +86,24 @@ double euclideanDist(const cv::Point a,const cv::Point b);
  */
 cv::Point boxCenter(const BoundingBox pt);
 
-/** @brief Compute the matrix of distances between guesses and ground truth, GT along the rows, guesses along the columns
+/** @brief Compute the matrix of distances between guesses and ground truth, predictions along the rows, ground truths along the columns
  * @param boundingBox vector of predicted bounding boxes
  * @param groundTruth vector of ground truth bounding boxes 
  * @return a matrix of distances between centers of each pair of boxes
  */
 std::vector<std::vector<double>> plotDistMatrix(const std::vector<BoundingBox> &boundingBox, const std::vector<BoundingBox> &groundTruth);
 
-/** @brief compute IoU value for boundingBoxes objects expressed as cv::Rect
+/** @brief compute IoU value for a pair of boundingBoxes objects expressed as cv::Rect
  * @param bb1 first BoundingBox
  * @param bb2 second BoundingBox 
- * @return IoU value 
+ * @return IoU ratio 
  */
 double IoUfromBbRect(const BoundingBox bb1, const BoundingBox bb2);
 
 /** @brief Given the total vector of IoU values for a single class, compute AP on the whole set of images
- *  @param vectorIoU vector of IoU values for each prediction of a single class, on all the images of the dataset
- *  @param totalObjects number of ground truth balls of a single class to be detected, on all the images of the dataset
- *  @return Average Precision on the single class: integral of the precisio recall curve
+ *  @param vectorIoU vector of IoU values for each prediction of a single class
+ *  @param totalObjects number of ground truth balls of a single class that should be detected
+ *  @return Average Precision on the single class
  */
 double computeAP(const std::vector<double> &vectorIoU, const int totalObjects);
 
@@ -122,8 +123,8 @@ std::vector<double> singleClassVectorIoU(const std::vector<BoundingBox> &groundT
 std::tuple<vectorsOfIoUStruct, groundTruthLengths> computeVectorsOfIoU(const std::vector<BoundingBox> &groundTruth, const std::vector<BoundingBox> &outAlgo);
 
 /** @brief Given the structure containing the performance result on segmented images, divided by class, compute the final value of mIoU 
- *  @param iouStructure structure containing six vectors, each one containing the IoU value of a single class for a single image
- *  @return finale performance result mIoU
+ *  @param iouStructure structure containing six vectors, each one containing the IoU value of a single class
+ *  @return final performance result mIoU
  */
 double finalMIou(const performanceMIou &iouStructure);
 
@@ -132,11 +133,5 @@ double finalMIou(const performanceMIou &iouStructure);
  * @param iouVector vector of Iou values to append
  */
 void accumulateIouValues(performanceMIou &iouStructure, std::vector<double> iouVector);
-
-/** @brief Accumulate IoU values and ground truth lengths for a single image
- *  @param globalAccumulator Struct where to insert the actual values
- *  @param 
- */
-//void accumulateIoUAndGT (AccumulatorForMAP& globalAccumulator, const vectorsOfIoUStruct& IoUtotals, const groundTruthLengths& lengthTotals);
 
 #endif // PERFORMANCE_H

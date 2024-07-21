@@ -106,6 +106,7 @@ std::tuple<float, float> splitHorVertLines(const std::vector<cv::Vec2f> &lines, 
 
     // Optional for debugging: print on screen the mean values of Rho for horizontal and vertical lines
     //std::cout << "Mean Rho Horiz: " << meanHoriz << "   Mean Rho Vert: " << meanVert << std::endl;
+    
     return std::make_tuple(meanHoriz, meanVert);
 }
 
