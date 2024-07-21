@@ -101,10 +101,10 @@ cv::Mat best_homog(std::vector<cv::Point2f> footage_table_corners, std::vector<c
  * @param image The image (frame) on which to draw the trajectory.
  * @param trajectory A vector of points (`cv::Point2f`) representing the trajectory to be drawn.
  * @param color The color of the ball, this also specify the color of the trajectory lines. The color is selected based on the following:
- *              - 1: Green
- *              - 2: Black
- *              - 3: Light-Blue
- *              - 4: Red
+ *              - 1: Green for the white ball 
+ *              - 2: Black for the black ball
+ *              - 3: Light-Blue for the stripped ball
+ *              - 4: Red for the solid ball
  */
 void drawTrajectory(cv::Mat& image, const std::vector<cv::Point2f>& trajectory, int color);
 
