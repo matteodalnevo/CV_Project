@@ -1,0 +1,16 @@
+Dataset created from Marco Panizzo
+
+POSITIVE DATASET
+
+The creation of this dataset was done to train a Haar cascade classifier to detect and find balls in the eight-ball pool game. A set of eight pool balls was used as samples.
+
+An ad hoc support for a single ball was created to generate an air cushion to reduce the friction between the support and the ball itself. In this way, the ball was able to spin freely. To control the spin, a hair dryer was utilized.
+
+An iPhone was mounted on top of the ball and used to take slow-motion videos (240fps) of the spinning ball to reduce motion blur. Fifteen videos were taken. Then, using a simple C++ program, the videos were subdivided into frames, and the white region around the ball was recolored with a green/blue color. The frames were then cropped.
+
+NEGATIVE DATASET
+
+For the negative dataset, frames from billiard games were used. The balls were erased from the scene, and then a sliding window procedure was used to save all these windows into the negative dataset.
+
+The presented material is a small portion of the original dataset.
+
