@@ -272,7 +272,7 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
     
     // Initialize a vector of Bounding Box
     std::vector<BoundingBox> Bbox;
-         
+    // Classify all the Bounding Box with the ID: -1
     for (auto& bbox : Bbox_rect) {
         BoundingBox temp;
         temp.box = bbox;
@@ -284,6 +284,7 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
     int whiteindex = -1;
     int blackindex = -1;
 
+    // Classify black and white balls
     computeWhiteBlackBallIndexes(image, Bbox, whiteindex, blackindex);
 
     if (whiteindex != -1) {
@@ -294,6 +295,7 @@ std::vector<BoundingBox> ballClassification(cv::Mat& image, const std::vector<cv
         Bbox[blackindex].ID = 2;
     }
 
+    // Classify the other balls
     classifySolidStripeBalls(image, Bbox);
     
     return Bbox;
