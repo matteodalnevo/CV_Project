@@ -21,7 +21,13 @@
 #include <string>
 #include <numeric>
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    // Verify that no arguments are passed to the function
+    if (argc != 1 ) {
+        std::cout << "\nError: you cannot pass any argument to this executable" << std::endl;
+        return 1;
+    }
 
     // List of paths for video clips
     std::vector<std::string> imagePaths = {
@@ -94,19 +100,11 @@ int main() {
     };
 
 //Vectors that store the complete list of IoU values from the segmented images
-performanceMIou iouAccumulator;
-std::vector<double> segmentationPerformance_class1; 
-std::vector<double> segmentationPerformance_class2;
-std::vector<double> segmentationPerformance_class3;
-std::vector<double> segmentationPerformance_class4;
-std::vector<double> segmentationPerformance_class5;
-std::vector<double> segmentationPerformance_class6; 
+performanceMIou globalIouAccumulatiorSegmentation;
+std::vector<double> segmentationPerformance_class1, segmentationPerformance_class2, segmentationPerformance_class3, segmentationPerformance_class4, segmentationPerformance_class5, segmentationPerformance_class6; 
 
 //Vectors that store the complete list of IoU values for each single class
-std::vector<double> globalMAPaccumulator_class1;
-std::vector<double> globalMAPaccumulator_class2;
-std::vector<double> globalMAPaccumulator_class3;
-std::vector<double> globalMAPaccumulator_class4;
+std::vector<double> globalMAPaccumulator_class1, globalMAPaccumulator_class2, globalMAPaccumulator_class3, globalMAPaccumulator_class4;
 
 //Accumulator of number of total ground truth objects for each class
 int totalObjects_class1 = 0, totalObjects_class2 = 0, totalObjects_class3 = 0, totalObjects_class4 = 0;
@@ -176,26 +174,36 @@ for (int i = 0; i < imagePaths.size(); ++i) {
 
         // FIRST METRIC: mean Intersection over Union computed on segmented masks
 
+        // Structure of accumulator value of segmentation performance on the single clip
+        performanceMIou singleClipAccumulator;
+
         //Compute vector of IoU for each class on the segmented images
         std::vector<double> IoU_first = segmentationIoU(segmentation_gt_first, segmentation_first);
         std::vector<double> IoU_last = segmentationIoU(segmentation_gt_last, segmentation_last);
+
+        // Accumulate segmentation performances on each image
+        accumulateIouValues(singleClipAccumulator, IoU_first);
+        accumulateIouValues(singleClipAccumulator, IoU_last);
+
+        // Compute mIoU on the two images of the single clip
+        double single_clip_IoU = finalMIou(singleClipAccumulator);
 
         // Optional for debugging: Print the values of IoU for each class of the first and last frame of the current clip
         // std::cout << "Segmentation IoU vector for first image " << std::endl;
         // for(int z = 0; z < IoU_first.size(); ++z) {
         //     std::cout << "  " << IoU_first[z];
         // }
-        // std::cout << std::endl;
+        // std::cout << "\n" << std::endl;
         // std::cout << "Segmentation IoU vector for last image " << std::endl;
         // for(int z = 0; z < IoU_last.size(); ++z) {
         //     std::cout << "  " << IoU_last[z];
         // }
-        // std::cout << std::endl;
-        // cv::waitKey(0);
+        // std::cout << "\n" << std::endl;
+        //cv::waitKey(0);
 
         //Accumulate IoU for each class on a struct containing 6 different vectors
-        accumulateIouValues(iouAccumulator, IoU_first);
-        accumulateIouValues(iouAccumulator, IoU_last); 
+        accumulateIouValues(globalIouAccumulatiorSegmentation, IoU_first);
+        accumulateIouValues(globalIouAccumulatiorSegmentation, IoU_last); 
 
         // END OF FIRST METRIC
 
@@ -211,6 +219,10 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         vectorsOfIoUStruct IoUtotals;
         groundTruthLengths lengthTotals;
 
+        // Define structs to store results of mAP for the two images of a single clip
+        std::vector<double> singleClipAccForMap_class1, singleClipAccForMap_class2, singleClipAccForMap_class3, singleClipAccForMap_class4; 
+        int singleClipGT_class1 = 0, singleClipGT_class2 = 0, singleClipGT_class3 = 0, singleClipGT_class4 = 0;
+
         //Compute the IoU vectors for all the detections of the first frame
         std::tie(IoUtotals, lengthTotals) = computeVectorsOfIoU(groundTruthBoxesFirst, classified_boxes_first);
 
@@ -219,28 +231,58 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         globalMAPaccumulator_class2.insert(globalMAPaccumulator_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
         globalMAPaccumulator_class3.insert(globalMAPaccumulator_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
         globalMAPaccumulator_class4.insert(globalMAPaccumulator_class4.end(), IoUtotals.class4.begin(), IoUtotals.class4.end());
-
         totalObjects_class1 += lengthTotals.class1;
         totalObjects_class2 += lengthTotals.class2;
         totalObjects_class3 += lengthTotals.class3;
         totalObjects_class4 += lengthTotals.class4;
 
+        // Accumulate values for MAP computations on single first frame
+        singleClipAccForMap_class1.insert(singleClipAccForMap_class1.end(), IoUtotals.class1.begin(), IoUtotals.class1.end());
+        singleClipAccForMap_class2.insert(singleClipAccForMap_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
+        singleClipAccForMap_class3.insert(singleClipAccForMap_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
+        singleClipAccForMap_class4.insert(singleClipAccForMap_class4.end(), IoUtotals.class4.begin(), IoUtotals.class4.end());
+        singleClipGT_class1 += lengthTotals.class1;
+        singleClipGT_class1 += lengthTotals.class2; 
+        singleClipGT_class1 += lengthTotals.class3;
+        singleClipGT_class1 += lengthTotals.class4;
+
         //Compute the IoU vectors for all the detections of the first frame
         std::tie(IoUtotals, lengthTotals) = computeVectorsOfIoU(groundTruthBoxesLast, classified_boxes_last);
+
         //Accumulate the values for a single image on the complete vector for the first frame
         globalMAPaccumulator_class1.insert(globalMAPaccumulator_class1.end(), IoUtotals.class1.begin(), IoUtotals.class1.end());
         globalMAPaccumulator_class2.insert(globalMAPaccumulator_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
         globalMAPaccumulator_class3.insert(globalMAPaccumulator_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
         globalMAPaccumulator_class4.insert(globalMAPaccumulator_class4.end(), IoUtotals.class4.begin(), IoUtotals.class4.end());
- 
         totalObjects_class1 += lengthTotals.class1;
         totalObjects_class2 += lengthTotals.class2;
         totalObjects_class3 += lengthTotals.class3;
-        totalObjects_class4 += lengthTotals.class4; 
+        totalObjects_class4 += lengthTotals.class4;
+
+        // Accumulate values for computation of single image MAP performance
+        singleClipAccForMap_class1.insert(singleClipAccForMap_class1.end(), IoUtotals.class1.begin(), IoUtotals.class1.end());
+        singleClipAccForMap_class2.insert(singleClipAccForMap_class2.end(), IoUtotals.class2.begin(), IoUtotals.class2.end());
+        singleClipAccForMap_class3.insert(singleClipAccForMap_class3.end(), IoUtotals.class3.begin(), IoUtotals.class3.end());
+        singleClipAccForMap_class4.insert(singleClipAccForMap_class4.end(), IoUtotals.class4.begin(), IoUtotals.class4.end());
+        singleClipGT_class1 += lengthTotals.class1;
+        singleClipGT_class1 += lengthTotals.class2; 
+        singleClipGT_class1 += lengthTotals.class3;
+        singleClipGT_class1 += lengthTotals.class4;
+
+        // Computation of MAP for a single videoclip
+        std::vector<double> singleClipAP;
+        singleClipAP.push_back(computeAP(singleClipAccForMap_class1, singleClipGT_class1));
+        singleClipAP.push_back(computeAP(singleClipAccForMap_class2, singleClipGT_class2)); 
+        singleClipAP.push_back(computeAP(singleClipAccForMap_class3, singleClipGT_class3));
+        singleClipAP.push_back(computeAP(singleClipAccForMap_class4, singleClipGT_class4));
+        double sumOfSingleClipAP = std::accumulate(singleClipAP.begin(), singleClipAP.end(), 0.0);
+        double singleClipMAP = sumOfSingleClipAP / singleClipAP.size();
 
         // END OF SECOND METRIC
 
-        std::cout << "Clip " << imagePaths[i] << "          OK" << std::endl;
+        std::cout << "Clip " << imagePaths[i] << "          OK\n" << std::endl;
+        std::cout << "Current clip mIoU: " << single_clip_IoU << std::endl;
+        std::cout << "Current clip mAP:  " << singleClipMAP << std::endl;
         std::cout << "------------------------------------------------------" << std::endl;   
 
     }
@@ -258,7 +300,7 @@ for (int i = 0; i < imagePaths.size(); ++i) {
     std::cout << "mAP on the whole dataset is " << mAP << std::endl;
 
     //Computation of the mean Intersection over Union on the whole dataset
-    double final_mIoU = finalMIou(iouAccumulator);
+    double final_mIoU = finalMIou(globalIouAccumulatiorSegmentation);
     std::cout << "mIoU on the whole dataset is " << final_mIoU << std::endl;
 
     return 0;
