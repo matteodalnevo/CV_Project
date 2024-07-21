@@ -38,7 +38,7 @@ double calculateBlackPixelPercentage(const cv::Mat& image, const int threshold);
  * This function enlarges or shrinks the bounding box by a specified shift value
  * 
  * @param bbox The bounding box to adjust
- * @param shift The amount to adjust the bounding box dimensions
+ * @param shift The amount to adjust the bounding box dimensions [Pixels]
  */
 void adjustBoundingBox(BoundingBox& bbox, int shift);
 
@@ -70,7 +70,7 @@ void computeWhiteBlackBallIndexes(const cv::Mat& image, std::vector<BoundingBox>
 double processBoundingBox(BoundingBox& bbox, const cv::Mat& image, const int shift, const cv::Vec3b& color, const int val, const int white_binary_threshold);
 
 /**
- * @brief Classifies balls in the image as solid or stripe balls
+ * @brief Classifies balls in the image as solid or stripe balls in a cascade procedure
  * 
  * This function classifies bounding boxes in the image into solid or stripe balls based on pixel percentages and color characteristics
  * 
@@ -82,7 +82,7 @@ void classifySolidStripeBalls(const cv::Mat& image, std::vector<BoundingBox>& Bb
 /**
  * @brief Main function for ball classification
  * 
- * This function initializes bounding boxes from rectangles, computes white and black ball indexes, classifies solid and stripe balls, and returns the classified bounding boxes
+ * This function initializes bounding boxes from rectangles, classify white and black balls, classifies solid and stripe balls, and returns the classified bounding boxes
  * 
  * @param image The input image
  * @param Bbox_rect The vector of rectangles representing initial bounding boxes
