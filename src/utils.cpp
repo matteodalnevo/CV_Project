@@ -22,21 +22,17 @@ void showImage(const cv::Mat& image, const std::string& windowName) {
 
     // Show the image inside the created window
     cv::imshow(windowName, image);
-
-    // Wait for any keystroke in the window
-    //cv::waitKey(0);
-    // cv::destroyAllWindows();
 }
 
 // Function to read bounding boxes from a file
 bool readBoundingBoxes(const std::string& filePath, std::vector<BoundingBox>& boundingBoxes) {
     std::ifstream inputFile(filePath);
-
+    // Check if is possible to open the file linked in the path 
     if (!inputFile.is_open()) {
         std::cerr << "Unable to open file: " << filePath << std::endl;
         return false;
     }
-
+    // Read the file line by line and save the Bounding Box parameters in the relative variable, then close the file
     std::string line;
     while (getline(inputFile, line)) {
         std::istringstream iss(line);
@@ -67,18 +63,17 @@ cv::Scalar getColorForValue(int value) {
 // Function to map from mask to color segmented image
 void mapGrayscaleMaskToColorImage(const cv::Mat& grayscaleMask, cv::Mat& colorImage) {
     colorImage = cv::Mat::zeros(grayscaleMask.size(), CV_8UC3);
-
+    // Loop in all the image
     for (int i = 0; i < grayscaleMask.rows; ++i) {
         for (int j = 0; j < grayscaleMask.cols; ++j) {
             int value = grayscaleMask.at<uchar>(i, j); // Assuming grayscaleMask is single-channel (CV_8UC1)
-            cv::Scalar color = getColorForValue(value);
-            colorImage.at<cv::Vec3b>(i, j) = cv::Vec3b(color[0], color[1], color[2]);
+            cv::Scalar color = getColorForValue(value); // Color map
+            colorImage.at<cv::Vec3b>(i, j) = cv::Vec3b(color[0], color[1], color[2]); // Change the pixels value
         }
     }
 }
 
 // Function to plot a Ball's Bounding Box in an image based on the ID
-
 void plotBBox(cv::Mat& image, BoundingBox& bbox) {
     // Create a transparent overlay with the same size as the original image
     cv::Mat overlay = cv::Mat::zeros(image.size(), CV_8UC3);
@@ -106,7 +101,7 @@ void plotBBox(cv::Mat& image, BoundingBox& bbox) {
         default:
             break;
     }
-
+    // Draw the bounding box only if it is classified
     if (bbox.ID != -1) {
         // Draw the Bounding Box contour on the original image
         cv::rectangle(image, bbox.box, color, 2);
@@ -131,7 +126,8 @@ void outputBBImage(cv::Mat& image, std::vector<cv::Point2f> vertices, std::vecto
     std::vector<std::vector<cv::Point>> contours;
     contours.push_back(points);
     cv::polylines(image, contours, true, cv::Scalar(0, 255, 255), 2); // Yellow color with thickness 2
-
+    
+    // Draw all the Bounding Box
     for (auto& bbox : classified_boxes) {
         // Plot the Classified Bounding Box
         plotBBox(image, bbox);
