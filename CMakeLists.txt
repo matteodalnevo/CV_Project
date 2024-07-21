@@ -1,7 +1,7 @@
 # define the minimum version of CMake required
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 # define the project name
-project(Eight_Pool_Analysis VERSION 1.5.3)
+project(Eight_Pool_Analysis)
 
 #include(CTest)
 #enable_testing()

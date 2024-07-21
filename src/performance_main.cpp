@@ -152,7 +152,7 @@ for (int i = 0; i < imagePaths.size(); ++i) {
         cv::Mat segmentation_first = segmentation(frames.front(),footage_corners, classified_boxes_first, hand_first );
         cv::Mat segmentation_last = segmentation(frames.back(),footage_corners, classified_boxes_last, hand_last);
 
-        //Convert segmented image from gray scale to BGR
+        //Map the segmented image from gray scale to BGR
         cv::Mat first_col, last_col;
         mapGrayscaleMaskToColorImage( segmentation_first, first_col);
         mapGrayscaleMaskToColorImage( segmentation_last, last_col);

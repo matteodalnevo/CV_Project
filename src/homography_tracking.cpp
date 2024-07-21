@@ -557,8 +557,6 @@ std::vector<cv::Mat> homography_track_balls(std::vector<cv::Mat> video_frames, s
             // Draw the static ball 
             drawStaticBalls(table_scheme_mod, centers_scheme, color_just_draw);
 
-            cv::Mat table_scheme_mod_small;
-
             // Resized version of the scheme image and overwriting on the original videp            
             resizeAndCopyToFrame(table_scheme_mod, footage_homography, cloned_video_frames, j);
 

@@ -154,5 +154,6 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     double lowerThreshold = upperThreshold / 2; // best upper threshold for canny
     std::vector<cv::Vec2f> lines = detectHoughLines(morphResult, lowerThreshold, upperThreshold);
 
+    // Returning the variable 'image' (table mask) is useful only for debugging
     return std::make_tuple(image, lines);
 }

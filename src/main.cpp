@@ -47,6 +47,7 @@ void processVideo(const std::string &videoPath, int index = -1) {
     std::vector<cv::Vec2f> first_detected_lines;
 
     // Execute the preprocessing on the image and detect a raw group of lines 
+    // Collecting the variable 'result_first' (table mask) is useful only for debugging
     std::tie(result_first, first_detected_lines) = preProcess(frames.front());
 
     // Table Corners
@@ -136,9 +137,16 @@ int main(int argc, char* argv[]) {
 
             // Overall function that compute al the requested tasks
             processVideo(imagePaths[i], i);
-            std::cout << "\nPress any key to proceed to the next clip " << std::endl;
+            if (i != imagePaths.size()-1) {
+                std::cout << "\nPress any key to proceed to the next clip " << std::endl;
+            }
+            else  {
+                std::cout << "\nPress any key to end the execution of the program" << std::endl;
+            }            
             cv::waitKey(0);
         }
+
+        return 0;
     }
 
     // Argument provided, process the single video file
@@ -147,6 +155,7 @@ int main(int argc, char* argv[]) {
         
         // Overall function that compute al the requested tasks
         processVideo(videoPath);
+        std::cout << "\nPress any key to end the execution of the program " << std::endl;
         cv::waitKey(0);
     } 
 
