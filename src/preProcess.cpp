@@ -70,7 +70,7 @@ double calculateDistance(cv::Vec3b color1, cv::Vec3b color2) {
 cv::Mat createColorMask(const cv::Mat& image, cv::Vec3b targetColor, double similarityThreshold) {
     // Create a black grayscale image
     cv::Mat mask(image.size(), CV_8UC1, cv::Scalar(0));
-    // Loop over all the image and set as 255 the pixel only if is similar to the table
+    // Loop over all the image and set as 255 the pixel only if is similar to the color table
     for (int y = 0; y < image.rows; ++y) {
         for (int x = 0; x < image.cols; ++x) {
             // Extrapolate the pixel value in (y,x)
@@ -132,7 +132,7 @@ std::tuple<cv::Mat, std::vector<cv::Vec2f>> preProcess(const cv::Mat& image) {
     std::vector<int> largestIndices;
     findLargestClusters(labels, clusterCount, largestIndices);
     
-    // Extrapolated the second cluster BGR color (that is always the second one)
+    // Extrapolated the table cluster BGR color (that is always the second one)
     cv::Scalar secondLargestColor = findClusterColor(centers, largestIndices[1]);
     // Compute the clusterized image
     cv::Mat clusteredImage = visualizeClusters(image, labels, centers);
