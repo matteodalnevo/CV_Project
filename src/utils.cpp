@@ -138,6 +138,8 @@ void outputBBImage(cv::Mat& image, std::vector<cv::Point2f> vertices, std::vecto
     }
 }
 
+// SEGMENTATION: MARCO PANIZZO
+
 cv::Mat segmentation(const cv::Mat img, const std::vector<cv::Point2f> footage_corners, const std::vector<BoundingBox> classified_boxes, cv::Mat hand_mask) {
     // Create a black image of the same size as input image
     cv::Mat dark_image = cv::Mat::zeros(img.size(), CV_8UC1);

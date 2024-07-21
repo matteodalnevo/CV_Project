@@ -87,7 +87,7 @@ void plotBBox(cv::Mat& image, BoundingBox& bbox);
  */
 void outputBBImage(cv::Mat& image, std::vector<cv::Point2f> vertices, std::vector<BoundingBox> classified_boxes);
 
-/**
+/** MARCO PANIZZZO 
  * @brief Segments an image by filling a polygon area with a specific color and drawing circles
  *        at the center of classified bounding boxes. It also applies a hand mask to blend the result
  * 
