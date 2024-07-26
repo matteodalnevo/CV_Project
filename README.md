@@ -1,4 +1,3 @@
-# DAL NEVO MATTEO ID: 2087919
 # CV_Project
 
 How to run the code:
